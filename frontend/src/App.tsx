@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import html2pdf from 'html2pdf.js'
 
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '')
+
 interface Transaction {
   id: string
   customerId?: string
@@ -600,7 +602,7 @@ function App() {
 
   const can = (permission: keyof EmployeePermissionSet) => getCurrentPermissions()[permission]
 
-  const handleLogin = (e?: React.FormEvent) => {
+  const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault()
 
     if (loginForm.username === DEV_USERNAME && loginForm.password === DEV_PASSWORD) {
@@ -618,15 +620,26 @@ function App() {
       return
     }
 
-    const match = allUsers.find((user) => user.username === loginForm.username && user.password === loginForm.password)
-    if (match) {
-      setCurrentUser(match)
-      setCurrentPage('home')
-      setLoginError('')
-      return
-    }
+    try {
+      const response = await fetch(`${API_URL}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm)
+      })
 
-    setLoginError(language === 'tr' ? 'Kullanıcı adı veya şifre hatalı.' : language === 'en' ? 'Incorrect username or password.' : 'اسم المستخدم أو كلمة المرور غير صحيحة.')
+      if (response.ok) {
+        const data = await response.json()
+        setCurrentUser(data.user)
+        setCurrentPage('home')
+        setLoginError('')
+        return
+      } else {
+        setLoginError(language === 'tr' ? 'Kullanıcı adı veya şifre hatalı.' : language === 'en' ? 'Incorrect username or password.' : 'اسم المستخدم أو كلمة المرور غير صحيحة.')
+        return
+      }
+    } catch (err) {
+      setLoginError(language === 'tr' ? 'Sunucuya bağlanılamadı.' : language === 'en' ? 'Could not connect to server.' : 'لم يتمكن من الاتصال بالخادم.')
+    }
   }
 
   const handleLogout = () => {
@@ -1000,37 +1013,85 @@ function App() {
     localStorage.setItem('muhasebe_current_user', JSON.stringify(currentUser))
 
     const storageOwnerId = getOwnerStorageId(currentUser)
-    const savedCustomers = storageOwnerId ? localStorage.getItem(getUserStorageKey(storageOwnerId)) : null
-    if (savedCustomers) {
-      const parsedCustomers = JSON.parse(savedCustomers)
-      const migratedCustomers = parsedCustomers.map((customer: Customer) => {
-        customer.locatedCountry = customer.locatedCountry || '-'
-        customer.originCountry = customer.originCountry || '-'
-        if (customer.transactions) {
-          customer.transactions = customer.transactions.map((transaction: Transaction) => {
-            if (!transaction.senderCurrency) {
-              transaction.senderCurrency = transaction.currency || 'USD'
+    
+    // API'dan müşterileri yükle
+    const loadCustomers = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/customers?ownerId=${storageOwnerId}`)
+        if (response.ok) {
+          const apiCustomers = await response.json()
+          const migratedCustomers = apiCustomers.map((customer: Customer) => {
+            customer.locatedCountry = customer.locatedCountry || '-'
+            customer.originCountry = customer.originCountry || '-'
+            if (customer.transactions) {
+              customer.transactions = customer.transactions.map((transaction: Transaction) => {
+                if (!transaction.senderCurrency) {
+                  transaction.senderCurrency = transaction.currency || 'USD'
+                }
+                if (!transaction.receiverCurrency) {
+                  transaction.receiverCurrency = transaction.currency || 'USD'
+                }
+                if (!transaction.senderRate) {
+                  const rate = currencyRates.find(r => r.currency === transaction.senderCurrency)?.rate || 1
+                  transaction.senderRate = rate
+                }
+                if (!transaction.receiverRate) {
+                  const rate = currencyRates.find(r => r.currency === transaction.receiverCurrency)?.rate || 1
+                  transaction.receiverRate = rate
+                }
+                return transaction
+              })
             }
-            if (!transaction.receiverCurrency) {
-              transaction.receiverCurrency = transaction.currency || 'USD'
-            }
-            if (!transaction.senderRate) {
-              const rate = currencyRates.find(r => r.currency === transaction.senderCurrency)?.rate || 1
-              transaction.senderRate = rate
-            }
-            if (!transaction.receiverRate) {
-              const rate = currencyRates.find(r => r.currency === transaction.receiverCurrency)?.rate || 1
-              transaction.receiverRate = rate
-            }
-            return transaction
+            return customer
           })
+          setCustomers(migratedCustomers)
+        } else {
+          // Fallback: localStorage'dan yükle
+          const savedCustomers = storageOwnerId ? localStorage.getItem(getUserStorageKey(storageOwnerId)) : null
+          if (savedCustomers) {
+            const parsedCustomers = JSON.parse(savedCustomers)
+            const migratedCustomers = parsedCustomers.map((customer: Customer) => {
+              customer.locatedCountry = customer.locatedCountry || '-'
+              customer.originCountry = customer.originCountry || '-'
+              if (customer.transactions) {
+                customer.transactions = customer.transactions.map((transaction: Transaction) => {
+                  if (!transaction.senderCurrency) {
+                    transaction.senderCurrency = transaction.currency || 'USD'
+                  }
+                  if (!transaction.receiverCurrency) {
+                    transaction.receiverCurrency = transaction.currency || 'USD'
+                  }
+                  if (!transaction.senderRate) {
+                    const rate = currencyRates.find(r => r.currency === transaction.senderCurrency)?.rate || 1
+                    transaction.senderRate = rate
+                  }
+                  if (!transaction.receiverRate) {
+                    const rate = currencyRates.find(r => r.currency === transaction.receiverCurrency)?.rate || 1
+                    transaction.receiverRate = rate
+                  }
+                  return transaction
+                })
+              }
+              return customer
+            })
+            setCustomers(migratedCustomers)
+          } else {
+            setCustomers([])
+          }
         }
-        return customer
-      })
-      setCustomers(migratedCustomers)
-    } else {
-      setCustomers([])
+      } catch (err) {
+        // Fallback: localStorage'dan yükle
+        const savedCustomers = storageOwnerId ? localStorage.getItem(getUserStorageKey(storageOwnerId)) : null
+        if (savedCustomers) {
+          const parsedCustomers = JSON.parse(savedCustomers)
+          setCustomers(parsedCustomers)
+        } else {
+          setCustomers([])
+        }
+      }
     }
+
+    loadCustomers()
 
     const savedRates = storageOwnerId ? localStorage.getItem(`muhasebe_rates_${storageOwnerId}`) : null
     if (savedRates) {
