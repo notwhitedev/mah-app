@@ -1,0 +1,26 @@
+{
+  "users": [
+    {
+      "id": "developer_1",
+      "username": "985782980",
+      "password": "5316255719",
+      "name": "Developer",
+      "country": "TR",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "role": "developer",
+      "permissions": {
+        "canAddCustomers": true,
+        "canEditCustomers": true,
+        "canDeleteCustomers": true,
+        "canAddTransactions": true,
+        "canEditTransactions": true,
+        "canDeleteTransactions": true,
+        "canViewCustomers": true,
+        "canViewTransactions": true,
+        "canManageEmployees": true,
+        "canExportPdf": true
+      }
+    }
+  ],
+  "customers": []
+}
