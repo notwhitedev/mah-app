@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import html2pdf from 'html2pdf.js'
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '')
+const API_URL = 'https://mah-app-backend.onrender.com'
 
 interface Transaction {
   id: string
