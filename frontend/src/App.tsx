@@ -1156,7 +1156,7 @@ function App() {
     return Math.floor(10000000000 + Math.random() * 900000000000).toString()
   }
 
-  const handleAddCustomer = (e: React.FormEvent) => {
+  const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!can('canAddCustomers')) {
       setErrorMessage(language === 'tr' ? 'Bu işlem için yetkiniz yok.' : language === 'en' ? 'You do not have permission for this action.' : 'ليس لديك صلاحية لهذا الإجراء.')
@@ -1186,33 +1186,71 @@ function App() {
 
     setErrorMessage('')
     
-    const newCustomer: Customer = {
-      id: generateCustomerId(),
-      name: name,
-      phone: phone,
-      email: email,
-      locatedCountry,
-      originCountry,
-      totalTransactions: 0,
-      profit: 0,
-      loss: 0,
-      transactions: []
+    const storageOwnerId = getOwnerStorageId(currentUser)
+    
+    try {
+      const response = await fetch(`${API_URL}/api/customers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          phone,
+          email,
+          locatedCountry,
+          originCountry,
+          ownerId: storageOwnerId,
+          transactions: []
+        })
+      })
+
+      if (response.ok) {
+        const apiCustomer = await response.json()
+        setCustomers([...customers, apiCustomer])
+        
+        if (currentUser) {
+          const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+          const text = language === 'tr'
+            ? `${userName} "${name}" müşterisini ekledi.`
+            : language === 'en'
+              ? `${userName} added customer "${name}".`
+              : `${userName} أضاف العميل "${name}".`
+          addEmployeeActivity(currentUser.id, text)
+        }
+        setCurrentPage('home')
+        form.reset()
+      } else {
+        setErrorMessage(language === 'tr' ? 'Müşteri eklenemedi.' : language === 'en' ? 'Failed to add customer.' : 'فشل إضافة العميل.')
+      }
+    } catch (err) {
+      // Fallback: localStorage'a kaydet
+      const newCustomer: Customer = {
+        id: generateCustomerId(),
+        name: name,
+        phone: phone,
+        email: email,
+        locatedCountry,
+        originCountry,
+        totalTransactions: 0,
+        profit: 0,
+        loss: 0,
+        transactions: []
+      }
+      setCustomers([...customers, newCustomer])
+      if (currentUser) {
+        const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+        const text = language === 'tr'
+          ? `${userName} "${name}" müşterisini ekledi.`
+          : language === 'en'
+            ? `${userName} added customer "${name}".`
+            : `${userName} أضاف العميل "${name}".`
+        addEmployeeActivity(currentUser.id, text)
+      }
+      setCurrentPage('home')
+      form.reset()
     }
-    setCustomers([...customers, newCustomer])
-    if (currentUser) {
-      const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-      const text = language === 'tr'
-        ? `${userName} "${name}" müşterisini ekledi.`
-        : language === 'en'
-          ? `${userName} added customer "${name}".`
-          : `${userName} أضاف العميل "${name}".`
-      addEmployeeActivity(currentUser.id, text)
-    }
-    setCurrentPage('home')
-    form.reset()
   }
 
-  const handleDeleteCustomer = (customerId: string) => {
+  const handleDeleteCustomer = async (customerId: string) => {
     if (!can('canDeleteCustomers')) {
       setErrorMessage(language === 'tr' ? 'Müşteri silme yetkiniz yok.' : language === 'en' ? 'You do not have permission to delete customers.' : 'ليس لديك صلاحية لحذف العملاء.')
       return
@@ -1220,15 +1258,38 @@ function App() {
 
     if (window.confirm(t.confirmDeleteCustomer)) {
       const customerToDelete = customers.find((c: Customer) => c.id === customerId)
-      setCustomers(customers.filter((c: Customer) => c.id !== customerId))
-      if (currentUser && customerToDelete) {
-        const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-        const text = language === 'tr'
-          ? `${userName} "${customerToDelete.name}" müşterisini sildi.`
-          : language === 'en'
-            ? `${userName} deleted customer "${customerToDelete.name}".`
-            : `${userName} حذف العميل "${customerToDelete.name}".`
-        addEmployeeActivity(currentUser.id, text)
+      
+      try {
+        const response = await fetch(`${API_URL}/api/customers/${customerId}`, {
+          method: 'DELETE'
+        })
+
+        if (response.ok) {
+          setCustomers(customers.filter((c: Customer) => c.id !== customerId))
+          if (currentUser && customerToDelete) {
+            const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+            const text = language === 'tr'
+              ? `${userName} "${customerToDelete.name}" müşterisini sildi.`
+              : language === 'en'
+                ? `${userName} deleted customer "${customerToDelete.name}".`
+                : `${userName} حذف العميل "${customerToDelete.name}".`
+            addEmployeeActivity(currentUser.id, text)
+          }
+        } else {
+          setErrorMessage(language === 'tr' ? 'Müşteri silinemedi.' : language === 'en' ? 'Failed to delete customer.' : 'فشل حذف العميل.')
+        }
+      } catch (err) {
+        // Fallback: localStorage'dan sil
+        setCustomers(customers.filter((c: Customer) => c.id !== customerId))
+        if (currentUser && customerToDelete) {
+          const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+          const text = language === 'tr'
+            ? `${userName} "${customerToDelete.name}" müşterisini sildi.`
+            : language === 'en'
+              ? `${userName} deleted customer "${customerToDelete.name}".`
+              : `${userName} حذف العميل "${customerToDelete.name}".`
+          addEmployeeActivity(currentUser.id, text)
+        }
       }
     }
   }
@@ -1540,7 +1601,7 @@ function App() {
     }
   }
 
-  const handleAddRow = () => {
+  const handleAddRow = async () => {
     if (!can('canAddTransactions')) {
       alert(language === 'tr' ? 'İşlem ekleme yetkiniz yok.' : language === 'en' ? 'You do not have permission to add transactions.' : 'ليس لديك صلاحية لإضافة المعاملات.')
       return
@@ -1572,25 +1633,79 @@ function App() {
       newTransaction[col.id] = col.type === 'number' ? 0 : ''
     })
 
-    setTransactions([...transactions, newTransaction])
+    try {
+      if (selectedCustomer) {
+        const response = await fetch(`${API_URL}/api/customers/${selectedCustomer.id}/transactions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newTransaction)
+        })
 
-    // İşlemi müşteriye kaydet
-    if (selectedCustomer) {
-      const updatedCustomer = {
-        ...selectedCustomer,
-        transactions: [...(selectedCustomer.transactions || []), newTransaction]
+        if (response.ok) {
+          const apiTransaction = await response.json()
+          setTransactions([...transactions, apiTransaction])
+
+          // İşlemi müşteriye kaydet
+          const updatedCustomer = {
+            ...selectedCustomer,
+            transactions: [...(selectedCustomer.transactions || []), apiTransaction]
+          }
+          const finalCustomer = updateCustomerStats(updatedCustomer)
+          setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
+          setSelectedCustomer(finalCustomer)
+          
+          if (currentUser) {
+            const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+            const text = language === 'tr'
+              ? `${userName} "${selectedCustomer.name}" müşterisinin hesabına yeni satır ekledi.`
+              : language === 'en'
+                ? `${userName} added a new row to customer "${selectedCustomer.name}" account.`
+                : `${userName} أضاف سطرًا جديدًا إلى حساب العميل "${selectedCustomer.name}".`
+            addEmployeeActivity(currentUser.id, text)
+          }
+        } else {
+          // Fallback: locale kaydet
+          setTransactions([...transactions, newTransaction])
+          if (selectedCustomer) {
+            const updatedCustomer = {
+              ...selectedCustomer,
+              transactions: [...(selectedCustomer.transactions || []), newTransaction]
+            }
+            const finalCustomer = updateCustomerStats(updatedCustomer)
+            setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
+            setSelectedCustomer(finalCustomer)
+            if (currentUser) {
+              const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+              const text = language === 'tr'
+                ? `${userName} "${selectedCustomer.name}" müşterisinin hesabına yeni satır ekledi.`
+                : language === 'en'
+                  ? `${userName} added a new row to customer "${selectedCustomer.name}" account.`
+                  : `${userName} أضاف سطرًا جديدًا إلى حساب العميل "${selectedCustomer.name}".`
+              addEmployeeActivity(currentUser.id, text)
+            }
+          }
+        }
       }
-      const finalCustomer = updateCustomerStats(updatedCustomer)
-      setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
-      setSelectedCustomer(finalCustomer)
-      if (currentUser) {
-        const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-        const text = language === 'tr'
-          ? `${userName} "${selectedCustomer.name}" müşterisinin hesabına yeni satır ekledi.`
-          : language === 'en'
-            ? `${userName} added a new row to customer "${selectedCustomer.name}" account.`
-            : `${userName} أضاف سطرًا جديدًا إلى حساب العميل "${selectedCustomer.name}".`
-        addEmployeeActivity(currentUser.id, text)
+    } catch (err) {
+      // Fallback: locale kaydet
+      setTransactions([...transactions, newTransaction])
+      if (selectedCustomer) {
+        const updatedCustomer = {
+          ...selectedCustomer,
+          transactions: [...(selectedCustomer.transactions || []), newTransaction]
+        }
+        const finalCustomer = updateCustomerStats(updatedCustomer)
+        setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
+        setSelectedCustomer(finalCustomer)
+        if (currentUser) {
+          const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+          const text = language === 'tr'
+            ? `${userName} "${selectedCustomer.name}" müşterisinin hesabına yeni satır ekledi.`
+            : language === 'en'
+              ? `${userName} added a new row to customer "${selectedCustomer.name}" account.`
+              : `${userName} أضاف سطرًا جديدًا إلى حساب العميل "${selectedCustomer.name}".`
+          addEmployeeActivity(currentUser.id, text)
+        }
       }
     }
   }
