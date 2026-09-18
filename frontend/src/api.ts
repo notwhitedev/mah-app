@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE = 'http://localhost:3000/api'
+const DEFAULT_API_BASE = 'https://mah-app-backend.onrender.com/api'
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_BASE).replace(/\/$/, '')
 

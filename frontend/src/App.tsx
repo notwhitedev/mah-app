@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import html2pdf from 'html2pdf.js'
+import { API_BASE_URL } from './api'
 
-const API_URL = 'https://mah-app-backend.onrender.com'
+const API_URL = API_BASE_URL.replace(/\/api$/, '')
 
 interface Transaction {
   id: string
