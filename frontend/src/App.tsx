@@ -1100,48 +1100,12 @@ function App() {
           })
           setCustomers(migratedCustomers)
         } else {
-          // Fallback: localStorage'dan yükle
-          const savedCustomers = storageOwnerId ? localStorage.getItem(getUserStorageKey(storageOwnerId)) : null
-          if (savedCustomers) {
-            const parsedCustomers = JSON.parse(savedCustomers)
-            const migratedCustomers = parsedCustomers.map((customer: Customer) => {
-              customer.locatedCountry = customer.locatedCountry || '-'
-              customer.originCountry = customer.originCountry || '-'
-              if (customer.transactions) {
-                customer.transactions = customer.transactions.map((transaction: Transaction) => {
-                  if (!transaction.senderCurrency) {
-                    transaction.senderCurrency = transaction.currency || 'USD'
-                  }
-                  if (!transaction.receiverCurrency) {
-                    transaction.receiverCurrency = transaction.currency || 'USD'
-                  }
-                  if (!transaction.senderRate) {
-                    const rate = currencyRates.find(r => r.currency === transaction.senderCurrency)?.rate || 1
-                    transaction.senderRate = rate
-                  }
-                  if (!transaction.receiverRate) {
-                    const rate = currencyRates.find(r => r.currency === transaction.receiverCurrency)?.rate || 1
-                    transaction.receiverRate = rate
-                  }
-                  return transaction
-                })
-              }
-              return customer
-            })
-            setCustomers(migratedCustomers)
-          } else {
-            setCustomers([])
-          }
+          setCustomers([])
+          setErrorMessage(language === 'tr' ? 'Bulut verileri yüklenemedi. İnternet ve Render bağlantısını kontrol edin.' : language === 'en' ? 'Cloud data could not be loaded. Check the internet and Render connection.' : 'تعذر تحميل البيانات السحابية. تحقق من اتصال الإنترنت وRender.')
         }
       } catch (err) {
-        // Fallback: localStorage'dan yükle
-        const savedCustomers = storageOwnerId ? localStorage.getItem(getUserStorageKey(storageOwnerId)) : null
-        if (savedCustomers) {
-          const parsedCustomers = JSON.parse(savedCustomers)
-          setCustomers(parsedCustomers)
-        } else {
-          setCustomers([])
-        }
+        setCustomers([])
+        setErrorMessage(language === 'tr' ? 'Bulut verilerine bağlanılamadı. İnternet ve Render bağlantısını kontrol edin.' : language === 'en' ? 'Could not connect to cloud data. Check the internet and Render connection.' : 'تعذر الاتصال بالبيانات السحابية. تحقق من اتصال الإنترنت وRender.')
       }
     }
 
@@ -1201,10 +1165,6 @@ function App() {
     localStorage.setItem('language', language)
     document.documentElement.lang = language
   }, [language])
-
-  const generateCustomerId = () => {
-    return Math.floor(100000000 + Math.random() * 900000000).toString()
-  }
 
   const generateTransactionId = () => {
     return Math.floor(10000000000 + Math.random() * 900000000000).toString()
@@ -1276,31 +1236,7 @@ function App() {
         setErrorMessage(language === 'tr' ? 'Müşteri eklenemedi.' : language === 'en' ? 'Failed to add customer.' : 'فشل إضافة العميل.')
       }
     } catch (err) {
-      // Fallback: localStorage'a kaydet
-      const newCustomer: Customer = {
-        id: generateCustomerId(),
-        name: name,
-        phone: phone,
-        email: email,
-        locatedCountry,
-        originCountry,
-        totalTransactions: 0,
-        profit: 0,
-        loss: 0,
-        transactions: []
-      }
-      setCustomers([...customers, newCustomer])
-      if (currentUser) {
-        const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-        const text = language === 'tr'
-          ? `${userName} "${name}" müşterisini ekledi.`
-          : language === 'en'
-            ? `${userName} added customer "${name}".`
-            : `${userName} أضاف العميل "${name}".`
-        addEmployeeActivity(currentUser.id, text)
-      }
-      setCurrentPage('home')
-      form.reset()
+      setErrorMessage(language === 'tr' ? 'Müşteri buluta kaydedilemedi. Bilgiler yerel olarak saklanmadı.' : language === 'en' ? 'Customer could not be saved to the cloud. It was not stored locally.' : 'تعذر حفظ العميل في السحابة. لم يتم تخزينه محليًا.')
     }
   }
 
