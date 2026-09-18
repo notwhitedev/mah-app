@@ -650,7 +650,7 @@ function App() {
     // Kullanıcı kayıtları silinmez; sadece geçerli oturum kapanır.
   }
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     if (userId === 'developer') {
       return
     }
@@ -659,9 +659,17 @@ function App() {
       return
     }
 
-    const updatedUsers = allUsers.filter((user) => user.id !== userId)
-    setAllUsers(updatedUsers)
-    localStorage.setItem('muhasebe_users', JSON.stringify(updatedUsers))
+    try {
+      const response = await fetch(`${API_URL}/api/users/${userId}`, { method: 'DELETE' })
+      if (!response.ok) {
+        throw new Error('Delete failed')
+      }
+
+      const updatedUsers = allUsers.filter((user) => user.id !== userId)
+      setAllUsers(updatedUsers)
+    } catch {
+      console.error('Failed to delete user')
+    }
   }
 
   const getOwnerNameForUser = (user: UserAccount) => {
@@ -799,7 +807,7 @@ function App() {
     setEditingUserForm({ username: user.username, password: user.password })
   }
 
-  const handleSaveOwnerEdit = () => {
+  const handleSaveOwnerEdit = async () => {
     if (!editingUserId) return
 
     const targetUser = allUsers.find((user) => user.id === editingUserId)
@@ -819,33 +827,52 @@ function App() {
       return
     }
 
-    const duplicateCredentials = allUsers.some((user) => user.id !== editingUserId && user.username.trim().toLowerCase() === username.toLowerCase() && user.password.trim() === password)
-    if (duplicateCredentials) {
-      setDeveloperMessage(language === 'tr' ? 'Geçersiz: aynı kullanıcı adı ve şifre başka hesaba ait.' : language === 'en' ? 'Invalid: this username/password combination is already in use.' : 'غير صالح: اسم المستخدم وكلمة المرور هذا مستخدمان بالفعل في حساب آخر.')
-      return
+    try {
+      const response = await fetch(`${API_URL}/api/users/${editingUserId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...targetUser, username, password })
+      })
+
+      if (!response.ok) {
+        throw new Error('Update failed')
+      }
+
+      const data = await response.json()
+      const updatedUsers = allUsers.map((user) => user.id === editingUserId ? data.user : user)
+      setAllUsers(updatedUsers)
+      setDeveloperMessage(language === 'tr' ? 'Hesap bilgileri güncellendi.' : language === 'en' ? 'Account details updated.' : 'تم تحديث بيانات الحساب.')
+      setEditingUserId(null)
+      setEditingUserForm({ username: '', password: '' })
+    } catch {
+      setDeveloperMessage(language === 'tr' ? 'Sunucu güncellemesi başarısız.' : language === 'en' ? 'Server update failed.' : 'فشل تحديث الخادم.')
     }
-
-    const updatedUsers = allUsers.map((user) => {
-      if (user.id !== editingUserId) return user
-      return { ...user, username, password }
-    })
-
-    setAllUsers(updatedUsers)
-    localStorage.setItem('muhasebe_users', JSON.stringify(updatedUsers))
-    setDeveloperMessage(language === 'tr' ? 'Hesap bilgileri güncellendi.' : language === 'en' ? 'Account details updated.' : 'تم تحديث بيانات الحساب.')
-    setEditingUserId(null)
-    setEditingUserForm({ username: '', password: '' })
   }
 
-  const handlePermissionToggle = (employeeId: string, permissionKey: keyof EmployeePermissionSet) => {
-    const updatedUsers = allUsers.map((user) => {
-      if (user.id !== employeeId || user.role !== 'employee') return user
-      const nextPermissions = { ...(user.permissions || defaultEmployeePermissions) }
-      nextPermissions[permissionKey] = !nextPermissions[permissionKey]
-      return { ...user, permissions: nextPermissions }
-    })
-    setAllUsers(updatedUsers)
-    localStorage.setItem('muhasebe_users', JSON.stringify(updatedUsers))
+  const handlePermissionToggle = async (employeeId: string, permissionKey: keyof EmployeePermissionSet) => {
+    const targetUser = allUsers.find((user) => user.id === employeeId && user.role === 'employee')
+    if (!targetUser) return
+
+    const nextPermissions = { ...(targetUser.permissions || defaultEmployeePermissions) }
+    nextPermissions[permissionKey] = !nextPermissions[permissionKey]
+
+    try {
+      const response = await fetch(`${API_URL}/api/users/${employeeId}/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nextPermissions)
+      })
+
+      if (!response.ok) {
+        throw new Error('Permission update failed')
+      }
+
+      const data = await response.json()
+      const updatedUsers = allUsers.map((user) => user.id === employeeId ? data.user : user)
+      setAllUsers(updatedUsers)
+    } catch {
+      console.error('Failed to update permission')
+    }
   }
 
   const isDuplicateCredentials = (username: string, password: string) => {
@@ -864,7 +891,7 @@ function App() {
     return allUsers.some((user) => user.username.trim().toLowerCase() === normalizedUsername)
   }
 
-  const handleCreateEmployee = () => {
+  const handleCreateEmployee = async () => {
     const canManageEmployeesForThisUser = currentUser?.role === 'owner' || currentUser?.permissions?.canManageEmployees
     if (!currentUser || !canManageEmployeesForThisUser) return
 
@@ -890,44 +917,53 @@ function App() {
       return
     }
 
-    const newEmployee: UserAccount = {
-      id: generateCustomerId(),
-      username,
-      password,
-      name,
-      country,
-      createdAt: new Date().toISOString(),
-      role: 'employee',
-      ownerId: ownerId,
-      permissions: employeeForm.permissions
-    }
+    try {
+      const response = await fetch(`${API_URL}/api/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          password,
+          name,
+          country,
+          role: 'employee',
+          ownerId,
+          permissions: employeeForm.permissions
+        })
+      })
 
-    const updatedUsers = [...allUsers, newEmployee]
-    setAllUsers(updatedUsers)
-    localStorage.setItem('muhasebe_users', JSON.stringify(updatedUsers))
-    setEmployeeForm({
-      username: '',
-      password: '',
-      name: '',
-      country: '',
-      permissions: {
-        canAddCustomers: true,
-        canEditCustomers: true,
-        canDeleteCustomers: false,
-        canAddTransactions: true,
-        canEditTransactions: true,
-        canDeleteTransactions: false,
-        canViewCustomers: true,
-        canViewTransactions: true,
-        canManageEmployees: false,
-        canExportPdf: true
+      if (!response.ok) {
+        throw new Error('Create employee failed')
       }
-    })
-    setDeveloperMessage(language === 'tr' ? 'Çalışan başarıyla eklendi.' : language === 'en' ? 'Employee added successfully.' : 'تمت إضافة الموظف بنجاح.')
-    setShowEmployeeModal(false)
+
+      const data = await response.json()
+      setAllUsers([...allUsers, data.user])
+      setEmployeeForm({
+        username: '',
+        password: '',
+        name: '',
+        country: '',
+        permissions: {
+          canAddCustomers: true,
+          canEditCustomers: true,
+          canDeleteCustomers: false,
+          canAddTransactions: true,
+          canEditTransactions: true,
+          canDeleteTransactions: false,
+          canViewCustomers: true,
+          canViewTransactions: true,
+          canManageEmployees: false,
+          canExportPdf: true
+        }
+      })
+      setDeveloperMessage(language === 'tr' ? 'Çalışan başarıyla eklendi.' : language === 'en' ? 'Employee added successfully.' : 'تمت إضافة الموظف بنجاح.')
+      setShowEmployeeModal(false)
+    } catch {
+      setDeveloperMessage(language === 'tr' ? 'Çalışan eklenemedi.' : language === 'en' ? 'Employee could not be created.' : 'تعذر إضافة الموظف.')
+    }
   }
 
-  const handleCreateDeveloperUser = () => {
+  const handleCreateDeveloperUser = async () => {
     if (!developerForm.username.trim() || !developerForm.password.trim() || !developerForm.country.trim() || !developerForm.name.trim()) {
       setDeveloperMessage(language === 'tr' ? 'Lütfen tüm alanları doldurun.' : language === 'en' ? 'Please fill in all fields.' : 'يرجى ملء جميع الحقول.')
       return
@@ -946,33 +982,35 @@ function App() {
       return
     }
 
-    const newUser: UserAccount = {
-      id: generateCustomerId(),
-      username,
-      password: developerForm.password.trim(),
-      country: developerForm.country.trim(),
-      name: developerForm.name.trim(),
-      createdAt: new Date().toISOString(),
-      role: 'owner',
-      permissions: defaultOwnerPermissions
-    }
+    try {
+      const response = await fetch(`${API_URL}/api/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          password,
+          country: developerForm.country.trim(),
+          name: developerForm.name.trim(),
+          role: 'owner',
+          permissions: defaultOwnerPermissions
+        })
+      })
 
-    const updatedUsers = [...allUsers, newUser]
-    setAllUsers(updatedUsers)
-    localStorage.setItem('muhasebe_users', JSON.stringify(updatedUsers))
-    setDeveloperForm({ username: '', password: '', country: '', name: '' })
-    setDeveloperMessage(language === 'tr' ? 'Kullanıcı başarıyla eklendi.' : language === 'en' ? 'User added successfully.' : 'تمت إضافة المستخدم بنجاح.')
+      if (!response.ok) {
+        throw new Error('Create user failed')
+      }
+
+      const data = await response.json()
+      setAllUsers([...allUsers, data.user])
+      setDeveloperForm({ username: '', password: '', country: '', name: '' })
+      setDeveloperMessage(language === 'tr' ? 'Kullanıcı başarıyla eklendi.' : language === 'en' ? 'User added successfully.' : 'تمت إضافة المستخدم بنجاح.')
+    } catch {
+      setDeveloperMessage(language === 'tr' ? 'Kullanıcı eklenemedi.' : language === 'en' ? 'User creation failed.' : 'تعذر إنشاء المستخدم.')
+    }
   }
 
-  // localStorage'dan verileri yükle
+  // localStorage'dan sadece lokal ayarları yükle; kullanıcı verisi backend'den gelir
   useEffect(() => {
-    const savedUsers = localStorage.getItem('muhasebe_users')
-    if (savedUsers) {
-      const parsedUsers = JSON.parse(savedUsers)
-      setAllUsers(parsedUsers)
-    }
-    setHasLoadedUsers(true)
-
     const savedCurrentPage = localStorage.getItem('muhasebe_current_page')
     const savedCurrentUser = localStorage.getItem('muhasebe_current_user')
     if (savedCurrentUser) {
@@ -1001,6 +1039,21 @@ function App() {
     if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
       setLanguage(savedLanguage)
     }
+
+    const loadUsers = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/users`)
+        if (response.ok) {
+          const users = await response.json()
+          setAllUsers(users)
+        }
+      } catch {
+        console.error('Failed to load users from backend')
+      }
+      setHasLoadedUsers(true)
+    }
+
+    loadUsers()
   }, [])
 
   useEffect(() => {
