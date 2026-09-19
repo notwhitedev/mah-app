@@ -2229,7 +2229,8 @@ body.dark-mode .right-sidebar.collapsed {
 
 .app.rtl .main-content {
   margin-right: 0 !important;
-  margin-left: 80px !important;
+  margin-left: 0 !important;
+  max-width: 100% !important;
 }
 
 .app.rtl .main-content.expanded {
@@ -2295,6 +2296,67 @@ body.dark-mode .right-sidebar.collapsed {
   color: #333333;
   font-weight: 500;
 }
+
+.app.rtl .settings-item,
+.app.rtl .settings-section,
+.app.rtl .form-container {
+  direction: rtl;
+  text-align: right;
+}
+
+.app.rtl .settings-item {
+  justify-content: space-between;
+}
+
+.app.rtl input,
+.app.rtl select,
+.app.rtl textarea,
+.app.rtl .form-group input,
+.app.rtl .modal-input,
+.app.rtl .modal-select {
+  direction: rtl;
+  text-align: right;
+}
+
+.app.rtl input[type='tel'] {
+  direction: rtl;
+  text-align: right;
+}
+
+.toast-notification {
+  position: fixed;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: min(360px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.2);
+  animation: toastDrop 180ms ease-out;
+  pointer-events: auto;
+}
+
+.toast-notification.success { background: linear-gradient(135deg, #0f766e, #0f4c5c); }
+.toast-notification.error { background: linear-gradient(135deg, #be123c, #9f1239); }
+.toast-icon { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.18); flex: 0 0 auto; }
+.toast-close { margin-left: auto; padding: 0 4px; border: 0; background: transparent; color: inherit; font-size: 22px; line-height: 1; cursor: pointer; }
+
+@keyframes toastDrop {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.app.rtl .toast-notification { direction: rtl; }
+.app.rtl .toast-close { margin-left: 0; margin-right: auto; }
 
 .dark-mode .settings-item label {
   color: #ffffff;

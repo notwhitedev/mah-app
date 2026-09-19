@@ -87,6 +87,7 @@ function App() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' } | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -603,6 +604,16 @@ function App() {
   }
 
   const can = (permission: keyof EmployeePermissionSet) => getCurrentPermissions()[permission]
+
+  useEffect(() => {
+    const message = errorMessage || developerMessage
+    if (!message) return
+    const lowered = message.toLocaleLowerCase()
+    const isError = Boolean(errorMessage) || ['hata', 'başarısız', 'eklenemedi', 'kaydedilemedi', 'zaten', 'boş', 'failed', 'already', 'could not'].some((word) => lowered.includes(word))
+    setToast({ message, kind: isError ? 'error' : 'success' })
+    const timer = window.setTimeout(() => setToast(null), 3000)
+    return () => window.clearTimeout(timer)
+  }, [errorMessage, developerMessage])
 
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -1410,7 +1421,7 @@ function App() {
 
     const element = document.createElement('div')
     element.innerHTML = `
-      <div style="font-family: 'Arial', sans-serif; width: 100%; min-height: 100%; background: #ececec; padding: 20px; box-sizing: border-box; direction: ${language === 'ar' ? 'rtl' : 'ltr'}; color: #1f2937;">
+      <div style="font-family: ${language === 'ar' ? "Tahoma, Arial, sans-serif" : "Arial, sans-serif"}; font-weight: 700; width: 100%; min-height: 100%; background: #ececec; padding: 20px; box-sizing: border-box; direction: ${language === 'ar' ? 'rtl' : 'ltr'}; color: #1f2937;">
         <div style="background: linear-gradient(90deg, #4e5bdd 0%, #6d54d7 48%, #7e4cc7 100%); border-radius: 14px 14px 0 0; padding: 16px 18px; color: #ffffff; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 10px rgba(79,70,229,0.14);">
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
             <div style="display: flex; flex-direction: column; align-items: ${language === 'ar' ? 'flex-end' : 'flex-start'}; min-width: 180px;">
@@ -1952,6 +1963,13 @@ function App() {
 
   return (
     <div className={`app ${darkMode ? 'dark-mode' : 'light-mode'} ${language === 'ar' ? 'rtl' : ''}`} onClick={closeContextMenu} dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {toast && (
+        <div className={`toast-notification ${toast.kind}`} role="status" aria-live="polite">
+          <span className="toast-icon">{toast.kind === 'success' ? '✓' : '!'}</span>
+          <span>{toast.message}</span>
+          <button type="button" className="toast-close" onClick={() => setToast(null)} aria-label="Close notification">×</button>
+        </div>
+      )}
       {!currentUser ? (
         <div className="page-content page-enter">
           <div className="form-container login-container">

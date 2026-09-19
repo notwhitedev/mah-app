@@ -277,6 +277,54 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const { username, password, name, country } = req.body || {};
+    const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'User not found.' });
+
+    const user = rows[0];
+    await pool.query(`
+      UPDATE users SET username = $1, password = $2, name = $3, country = $4
+      WHERE id = $5
+    `, [username || user.username, password || user.password, name || user.name, country || user.country, req.params.id]);
+    const updated = {
+      id: user.id,
+      username: username || user.username,
+      name: name || user.name,
+      country: country || user.country,
+      createdAt: user.created_at,
+      role: user.role,
+      ownerId: user.owner_id,
+      permissions: user.permissions
+    };
+    return res.json({ user: updated });
+  } catch (error) {
+    return res.status(500).json({ message: 'Database error' });
+  }
+});
+
+app.put('/api/users/:id/permissions', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'User not found.' });
+    await pool.query('UPDATE users SET permissions = $1 WHERE id = $2', [JSON.stringify(req.body || {}), req.params.id]);
+    const user = rows[0];
+    return res.json({ user: {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      country: user.country,
+      createdAt: user.created_at,
+      role: user.role,
+      ownerId: user.owner_id,
+      permissions: req.body || {}
+    }});
+  } catch (error) {
+    return res.status(500).json({ message: 'Database error' });
+  }
+});
+
 app.delete('/api/users/:id', async (req, res) => {
   try {
     const result = await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
