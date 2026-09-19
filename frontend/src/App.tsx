@@ -89,6 +89,12 @@ function App() {
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' } | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
+      {
+        match: /.*?"([^\"]+)" kullanıcısını sildi\./,
+        transform: (userName: string) => language === 'en'
+          ? `User deleted account "${userName}".`
+          : `المستخدم حذف الحساب "${userName}".`
+      },
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [contextMenu, setContextMenu] = useState<{ visible: boolean, x: number, y: number, type: string, id?: number | string }>({ visible: false, x: 0, y: 0, type: '', id: undefined })
   const [editingTransaction, setEditingTransaction] = useState<string | null>(null)
@@ -685,8 +691,19 @@ function App() {
 
       const updatedUsers = allUsers.filter((user) => user.id !== userId)
       setAllUsers(updatedUsers)
+      if (currentUser) {
+        const deletedUser = allUsers.find((user) => user.id === userId)
+        const deletedName = deletedUser?.name || deletedUser?.username || userId
+        const text = language === 'tr'
+          ? `${currentUser.name || 'Kullanıcı'} "${deletedName}" kullanıcısını sildi.`
+          : language === 'en'
+            ? `${currentUser.name || 'User'} deleted user "${deletedName}".`
+            : `${currentUser.name || 'المستخدم'} حذف المستخدم "${deletedName}".`
+        addEmployeeActivity(currentUser.id, text)
+      }
+      showToast(language === 'tr' ? 'Kullanıcı silindi.' : language === 'en' ? 'User deleted.' : 'تم حذف المستخدم.', 'success')
     } catch {
-      console.error('Failed to delete user')
+      showToast(language === 'tr' ? 'Kullanıcı silinemedi.' : language === 'en' ? 'User could not be deleted.' : 'تعذر حذف المستخدم.', 'error')
     }
   }
 
@@ -2096,7 +2113,7 @@ function App() {
                 {allUsers.length === 0 ? (
                   <div className="empty-state"><p>{language === 'tr' ? 'Kayıtlı kullanıcı yok.' : language === 'en' ? 'No users registered.' : 'لا يوجد مستخدمون مسجلون.'}</p></div>
                 ) : (
-                  allUsers.map((user) => {
+                  allUsers.filter((user) => user.role !== 'developer').map((user) => {
                     const ownerName = getOwnerNameForUser(user)
                     return (
                       <div key={user.id} className="developer-user-card">
@@ -2187,7 +2204,7 @@ function App() {
                 </div>
                 <div className="stat-info">
                   <p className="stat-label">{t.totalProfit}</p>
-                  <p className={`stat-value ${stats.totalProfit > 0 ? 'profit' : ''}`}>{stats.totalProfit > 0 ? `+${stats.totalProfit.toFixed(1)}` : '-'}</p>
+                  <p className={`stat-value ${stats.totalProfit > 0 ? 'profit' : ''}`}>{stats.totalProfit > 0 ? stats.totalProfit.toFixed(1) : '-'}</p>
                 </div>
               </div>
               <div className="stat-card">
@@ -2226,7 +2243,7 @@ function App() {
                 </div>
                 <div className="stat-info">
                   <p className="stat-label">{t.totalLoss}</p>
-                  <p className={`stat-value ${stats.totalLoss > 0 ? 'loss' : ''}`}>{stats.totalLoss > 0 ? `-${stats.totalLoss.toFixed(1)}` : '-'}</p>
+                  <p className={`stat-value ${stats.totalLoss > 0 ? 'loss' : ''}`}>{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '-'}</p>
                 </div>
               </div>
             </div>
@@ -2244,7 +2261,7 @@ function App() {
                 <div className="line-bar">
                   <div className="line-fill" style={{ width: stats.totalProfit > 0 ? `${Math.min(stats.totalProfit * 2, 100)}%` : '0%' }}></div>
                 </div>
-                <div className="line-value">{stats.totalProfit > 0 ? `+${stats.totalProfit.toFixed(1)}` : '-'}</div>
+                <div className="line-value">{stats.totalProfit > 0 ? stats.totalProfit.toFixed(1) : '-'}</div>
               </div>
               <div className="activity-line">
                 <div className="line-label">{t.activeAccounts}</div>
@@ -2442,11 +2459,11 @@ function App() {
                           </div>
                           <div className="customer-stat">
                             <span className="stat-label">{t.profitLabel}</span>
-                            <span className="stat-value profit">{customerStats.profit > 0 ? `+${customerStats.profit.toFixed(1)}` : '-'}</span>
+                            <span className="stat-value profit">{customerStats.profit > 0 ? customerStats.profit.toFixed(1) : '-'}</span>
                           </div>
                           <div className="customer-stat">
                             <span className="stat-label">{t.lossLabel}</span>
-                            <span className="stat-value loss">{customerStats.loss > 0 ? `-${customerStats.loss.toFixed(1)}` : '-'}</span>
+                            <span className="stat-value loss">{customerStats.loss > 0 ? customerStats.loss.toFixed(1) : '-'}</span>
                           </div>
                         </div>
                         <div className="customer-actions">
@@ -2775,7 +2792,7 @@ function App() {
                               )}
                             </td>
                             <td className={`profit-loss-cell ${transaction.profitLoss > 0 ? 'profit' : transaction.profitLoss < 0 ? 'loss' : ''}`}>
-                              {transaction.profitLoss !== 0 ? (transaction.profitLoss > 0 ? `+${transaction.profitLoss.toFixed(1)}` : transaction.profitLoss.toFixed(1)) : '-'}
+                              {transaction.profitLoss !== 0 ? Math.abs(transaction.profitLoss).toFixed(1) : '-'}
                             </td>
                             {customColumns.map(column => (
                               <td key={column.id}>
