@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import html2pdf from 'html2pdf.js'
 import { API_BASE_URL } from './api'
@@ -122,6 +122,7 @@ function App() {
   const [allUsers, setAllUsers] = useState<UserAccount[]>([])
   const [employeeActivities, setEmployeeActivities] = useState<Record<string, EmployeeActivityLog[]>>({})
   const [settingsLoaded, setSettingsLoaded] = useState(false)
+  const transactionSaveTimers = useRef<Record<string, number>>({})
   const [loginForm, setLoginForm] = useState({ username: '', password: '' })
   const [loginError, setLoginError] = useState('')
   const [developerForm, setDeveloperForm] = useState({ username: '', password: '', country: '', name: '' })
@@ -1283,7 +1284,7 @@ function App() {
           setErrorMessage(language === 'tr' ? 'Müşteri silinemedi.' : language === 'en' ? 'Failed to delete customer.' : 'فشل حذف العميل.')
         }
       } catch (err) {
-        setErrorMessage(language === 'tr' ? 'Müşteri silinemedi. Bulut bağlantısını kontrol edin.' : language === 'en' ? 'Customer could not be deleted. Check the cloud connection.' : 'تعذر حذف العميل. تحقق من اتصال السحابة.')
+        setErrorMessage(language === 'tr' ? 'Sunucuya bağlanılamadı; müşteri silinmedi.' : language === 'en' ? 'Could not reach the server; customer was not deleted.' : 'تعذر الاتصال بالخادم؛ لم يتم حذف العميل.')
       }
     }
   }
@@ -1658,11 +1659,11 @@ function App() {
             addEmployeeActivity(currentUser.id, text)
           }
         } else {
-          setErrorMessage(language === 'tr' ? 'Satır eklenemedi. Bulut bağlantısını kontrol edin.' : language === 'en' ? 'Row could not be added. Check the cloud connection.' : 'تعذر إضافة السطر. تحقق من اتصال السحابة.')
+          setErrorMessage(language === 'tr' ? 'Satır buluta kaydedilemedi.' : language === 'en' ? 'Row could not be saved to the cloud.' : 'تعذر حفظ السطر في السحابة.')
         }
       }
     } catch (err) {
-      setErrorMessage(language === 'tr' ? 'Satır eklenemedi. Bulut bağlantısını kontrol edin.' : language === 'en' ? 'Row could not be added. Check the cloud connection.' : 'تعذر إضافة السطر. تحقق من اتصال السحابة.')
+      setErrorMessage(language === 'tr' ? 'Sunucuya bağlanılamadı; satır eklenmedi.' : language === 'en' ? 'Could not reach the server; row was not added.' : 'تعذر الاتصال بالخادم؛ لم تتم إضافة السطر.')
     }
   }
 
@@ -1729,16 +1730,20 @@ function App() {
       const finalCustomer = updateCustomerStats(updatedCustomer)
       setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
       setSelectedCustomer(finalCustomer)
-      try {
-        const response = await fetch(`${API_URL}/api/customers/${selectedCustomer.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(finalCustomer)
-        })
-        if (!response.ok) throw new Error('Transaction update failed')
-      } catch {
-        setErrorMessage(language === 'tr' ? 'Satır buluta kaydedilemedi.' : language === 'en' ? 'Row could not be saved to the cloud.' : 'تعذر حفظ السطر في السحابة.')
-      }
+      const existingTimer = transactionSaveTimers.current[transactionId]
+      if (existingTimer) window.clearTimeout(existingTimer)
+      transactionSaveTimers.current[transactionId] = window.setTimeout(async () => {
+        try {
+          const response = await fetch(`${API_URL}/api/customers/${selectedCustomer.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalCustomer)
+          })
+          if (!response.ok) throw new Error('Transaction update failed')
+        } catch {
+          setErrorMessage(language === 'tr' ? 'Satır buluta kaydedilemedi.' : language === 'en' ? 'Row could not be saved to the cloud.' : 'تعذر حفظ السطر في السحابة.')
+        }
+      }, 350)
       if (currentUser) {
         const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
         const text = language === 'tr'
