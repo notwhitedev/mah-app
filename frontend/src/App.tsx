@@ -86,7 +86,6 @@ function App() {
   })
   const [customers, setCustomers] = useState<Customer[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [errorMessageState, setErrorMessageState] = useState('')
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' } | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
@@ -125,9 +124,7 @@ function App() {
   const [settingsLoaded, setSettingsLoaded] = useState(false)
   const transactionSaveTimers = useRef<Record<string, number>>({})
   const [loginForm, setLoginForm] = useState({ username: '', password: '' })
-  const [loginError, setLoginError] = useState('')
   const [developerForm, setDeveloperForm] = useState({ username: '', password: '', country: '', name: '' })
-  const [developerMessageState, setDeveloperMessageState] = useState('')
   const toastTimer = useRef<number | null>(null)
   const [showAllUsers, setShowAllUsers] = useState(false)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
@@ -614,12 +611,10 @@ function App() {
   }
 
   const setErrorMessage = (message: string) => {
-    setErrorMessageState(message)
     if (message) showToast(message, 'error')
   }
 
   const setDeveloperMessage = (message: string) => {
-    setDeveloperMessageState(message)
     if (!message) return
     const lowered = message.toLocaleLowerCase()
     const isError = ['hata', 'başarısız', 'eklenemedi', 'kaydedilemedi', 'zaten', 'boş', 'failed', 'already', 'could not', 'تعذر', 'موجود'].some((word) => lowered.includes(word))
@@ -640,7 +635,6 @@ function App() {
       }
       setCurrentUser(developerUser)
       setCurrentPage('developer-panel')
-      setLoginError('')
       return
     }
 
@@ -655,14 +649,15 @@ function App() {
         const data = await response.json()
         setCurrentUser(data.user)
         setCurrentPage('home')
-        setLoginError('')
         return
       } else {
-        setLoginError(language === 'tr' ? 'Kullanıcı adı veya şifre hatalı.' : language === 'en' ? 'Incorrect username or password.' : 'اسم المستخدم أو كلمة المرور غير صحيحة.')
+        const message = language === 'tr' ? 'Kullanıcı adı veya şifre hatalı.' : language === 'en' ? 'Incorrect username or password.' : 'اسم المستخدم أو كلمة المرور غير صحيحة.'
+        showToast(message, 'error')
         return
       }
     } catch (err) {
-      setLoginError(language === 'tr' ? 'Sunucuya bağlanılamadı.' : language === 'en' ? 'Could not connect to server.' : 'لم يتمكن من الاتصال بالخادم.')
+      const message = language === 'tr' ? 'Sunucuya bağlanılamadı.' : language === 'en' ? 'Could not connect to server.' : 'لم يتمكن من الاتصال بالخادم.'
+      showToast(message, 'error')
     }
   }
 
@@ -670,7 +665,6 @@ function App() {
     setCurrentUser(null)
     setCurrentPage('login')
     setLoginForm({ username: '', password: '' })
-    setLoginError('')
     // Kullanıcı kayıtları silinmez; sadece geçerli oturum kapanır.
   }
 
@@ -2021,7 +2015,6 @@ function App() {
                   required
                 />
               </div>
-              {loginError && <div className="error-message">{loginError}</div>}
               <button type="submit" className="submit-button">{language === 'tr' ? 'Giriş Yap' : language === 'en' ? 'Login' : 'تسجيل الدخول'}</button>
             </form>
           </div>
@@ -2096,7 +2089,6 @@ function App() {
                     onChange={(e) => setDeveloperForm({ ...developerForm, name: e.target.value })}
                   />
                 </div>
-                {developerMessageState && <div className="success-message">{developerMessageState}</div>}
                 <button className="submit-button" onClick={handleCreateDeveloperUser}>{language === 'tr' ? 'Kaydet' : language === 'en' ? 'Save' : 'حفظ'}</button>
               </div>
             ) : (
@@ -2273,16 +2265,10 @@ function App() {
             {!can('canAddCustomers') ? (
               <div className="form-container">
                 <h2>{t.addCustomer}</h2>
-                <div className="error-message">{language === 'tr' ? 'Bu işlem için yetkiniz yok.' : language === 'en' ? 'You do not have permission for this action.' : 'ليس لديك صلاحية لهذا الإجراء.'}</div>
               </div>
             ) : (
               <div className="form-container">
                 <h2>{t.addCustomer}</h2>
-                {errorMessageState && (
-                  <div className="error-message">
-                    {errorMessageState}
-                  </div>
-                )}
                 <form className="customer-form" onSubmit={handleAddCustomer}>
                   <div className="form-group">
                     <label>{t.customerName}</label>
@@ -2319,9 +2305,7 @@ function App() {
             <div className="form-container developer-panel">
               <h2>{t.employeesPage}</h2>
 
-              {!currentUser || (currentUser.role !== 'owner' && !currentUser.permissions?.canManageEmployees) ? (
-                <div className="error-message">{language === 'tr' ? 'Bu kullanıcı çalışan yönetme yetkisine sahip değil.' : language === 'en' ? 'This user does not have employee management permission.' : 'هذا المستخدم ليس لديه صلاحية إدارة الموظفين.'}</div>
-              ) : (
+              {!currentUser || (currentUser.role !== 'owner' && !currentUser.permissions?.canManageEmployees) ? null : (
                 <>
                   <div className="developer-actions">
                     <button className="toggle-button" onClick={() => setShowEmployeeModal(true)}>{t.addEmployee}</button>
