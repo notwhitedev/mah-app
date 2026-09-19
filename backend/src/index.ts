@@ -95,6 +95,14 @@ async function initializeDatabase() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      owner_id TEXT PRIMARY KEY,
+      settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_at TEXT NOT NULL
+    )
+  `);
+
   // Default developer user'ı ekle
   const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', ['985782980']);
   if (rows.length === 0) {
@@ -145,6 +153,29 @@ app.get('/api/health', (_req, res) => {
 
 app.get('/api', (_req, res) => {
   res.json({ message: 'Muhasebe API v1.0' });
+});
+
+app.get('/api/settings/:ownerId', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT settings FROM app_settings WHERE owner_id = $1', [req.params.ownerId]);
+    return res.json(rows[0]?.settings || {});
+  } catch (error) {
+    return res.status(500).json({ message: 'Database error' });
+  }
+});
+
+app.put('/api/settings/:ownerId', async (req, res) => {
+  try {
+    const settings = req.body && typeof req.body === 'object' ? req.body : {};
+    await pool.query(`
+      INSERT INTO app_settings (owner_id, settings, updated_at)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (owner_id) DO UPDATE SET settings = EXCLUDED.settings, updated_at = EXCLUDED.updated_at
+    `, [req.params.ownerId, JSON.stringify(settings), new Date().toISOString()]);
+    return res.json(settings);
+  } catch (error) {
+    return res.status(500).json({ message: 'Database error' });
+  }
 });
 
 app.get('/api/users', async (_req, res) => {

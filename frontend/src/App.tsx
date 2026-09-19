@@ -120,7 +120,8 @@ function App() {
   const [exportEndDate, setExportEndDate] = useState('')
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null)
   const [allUsers, setAllUsers] = useState<UserAccount[]>([])
-  const [hasLoadedUsers, setHasLoadedUsers] = useState(false)
+  const [employeeActivities, setEmployeeActivities] = useState<Record<string, EmployeeActivityLog[]>>({})
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
   const [loginForm, setLoginForm] = useState({ username: '', password: '' })
   const [loginError, setLoginError] = useState('')
   const [developerForm, setDeveloperForm] = useState({ username: '', password: '', country: '', name: '' })
@@ -555,7 +556,6 @@ function App() {
 
   const t = translations[language]
 
-  const getUserStorageKey = (userId: string) => `muhasebe_customers_${userId}`
   const defaultOwnerPermissions: EmployeePermissionSet = {
     canAddCustomers: true,
     canEditCustomers: true,
@@ -679,17 +679,10 @@ function App() {
   }
 
   const getEmployeeActivityLogs = (employeeId: string): EmployeeActivityLog[] => {
-    try {
-      const raw = localStorage.getItem('muhasebe_employee_activities')
-      if (!raw) return []
-      const parsed = JSON.parse(raw) as Record<string, EmployeeActivityLog[]>
-      return (parsed[employeeId] || []).slice(0, 30).map((log) => ({
-        ...log,
-        action: localizeEmployeeActivityText(log.action)
-      }))
-    } catch {
-      return []
-    }
+    return (employeeActivities[employeeId] || []).slice(0, 30).map((log) => ({
+      ...log,
+      action: localizeEmployeeActivityText(log.action)
+    }))
   }
 
   const getActivityFilterDays = () => {
@@ -784,22 +777,16 @@ function App() {
   const addEmployeeActivity = (employeeId: string | undefined, action: string) => {
     if (!employeeId) return
 
-    try {
-      const raw = localStorage.getItem('muhasebe_employee_activities')
-      const parsed = raw ? JSON.parse(raw) as Record<string, EmployeeActivityLog[]> : {}
-      const nextEntry: EmployeeActivityLog = {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        employeeId,
-        action,
-        timestamp: new Date().toISOString()
-      }
-
-      const existing = parsed[employeeId] || []
-      parsed[employeeId] = [nextEntry, ...existing].slice(0, 30)
-      localStorage.setItem('muhasebe_employee_activities', JSON.stringify(parsed))
-    } catch {
-      // ignore localStorage failure
+    const nextEntry: EmployeeActivityLog = {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      employeeId,
+      action,
+      timestamp: new Date().toISOString()
     }
+    setEmployeeActivities((previous) => ({
+      ...previous,
+      [employeeId]: [nextEntry, ...(previous[employeeId] || [])].slice(0, 30)
+    }))
   }
 
   const handleStartEditOwner = (user: UserAccount) => {
@@ -1051,7 +1038,6 @@ function App() {
       } catch {
         console.error('Failed to load users from backend')
       }
-      setHasLoadedUsers(true)
     }
 
     loadUsers()
@@ -1061,6 +1047,8 @@ function App() {
     if (!currentUser) {
       localStorage.removeItem('muhasebe_current_user')
       setCustomers([])
+      setEmployeeActivities({})
+      setSettingsLoaded(false)
       return
     }
 
@@ -1111,37 +1099,57 @@ function App() {
 
     loadCustomers()
 
-    const savedRates = storageOwnerId ? localStorage.getItem(`muhasebe_rates_${storageOwnerId}`) : null
-    if (savedRates) {
-      setCurrencyRates(JSON.parse(savedRates))
-    } else {
-      setCurrencyRates([
-        { currency: 'USD', rate: 1 },
-        { currency: 'EUR', rate: 0.93 },
-        { currency: 'GBP', rate: 0.79 }
-      ])
-    }
+    setSettingsLoaded(false)
+    fetch(`${API_URL}/api/settings/${storageOwnerId}`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Settings could not be loaded')
+        return response.json()
+      })
+      .then((settings) => {
+        if (Array.isArray(settings.currencyRates) && settings.currencyRates.length > 0) {
+          setCurrencyRates(settings.currencyRates)
+        } else {
+          setCurrencyRates([
+            { currency: 'USD', rate: 1 },
+            { currency: 'EUR', rate: 0.93 },
+            { currency: 'GBP', rate: 0.79 }
+          ])
+        }
+        if (Array.isArray(settings.customColumns)) setCustomColumns(settings.customColumns)
+        if (settings.employeeActivities && typeof settings.employeeActivities === 'object') {
+          setEmployeeActivities(settings.employeeActivities)
+        }
+        if (typeof settings.darkMode === 'boolean') setDarkMode(settings.darkMode)
+        if (typeof settings.sidebarCollapsed === 'boolean') setSidebarCollapsed(settings.sidebarCollapsed)
+        if (['tr', 'en', 'ar'].includes(settings.language)) setLanguage(settings.language)
+        setSettingsLoaded(true)
+      })
+      .catch(() => {
+        setSettingsLoaded(true)
+      })
   }, [currentUser])
 
   // Verileri localStorage'a kaydet
   useEffect(() => {
-    if (!currentUser) return
+    if (!currentUser || !settingsLoaded) return
     const storageOwnerId = getOwnerStorageId(currentUser)
     if (!storageOwnerId) return
-    localStorage.setItem(getUserStorageKey(storageOwnerId), JSON.stringify(customers))
-  }, [customers, currentUser])
-
-  useEffect(() => {
-    if (!currentUser) return
-    const storageOwnerId = getOwnerStorageId(currentUser)
-    if (!storageOwnerId) return
-    localStorage.setItem(`muhasebe_rates_${storageOwnerId}`, JSON.stringify(currencyRates))
-  }, [currencyRates, currentUser])
-
-  useEffect(() => {
-    if (!hasLoadedUsers) return
-    localStorage.setItem('muhasebe_users', JSON.stringify(allUsers))
-  }, [allUsers, hasLoadedUsers])
+    const settings = {
+      currencyRates,
+      customColumns,
+      employeeActivities,
+      darkMode,
+      sidebarCollapsed,
+      language
+    }
+    fetch(`${API_URL}/api/settings/${storageOwnerId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {
+      setErrorMessage(language === 'tr' ? 'Ayarlar buluta kaydedilemedi.' : language === 'en' ? 'Settings could not be saved to the cloud.' : 'تعذر حفظ الإعدادات في السحابة.')
+    })
+  }, [currencyRates, customColumns, employeeActivities, darkMode, sidebarCollapsed, language, currentUser, settingsLoaded])
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode))
@@ -1702,7 +1710,7 @@ function App() {
 
 
 
-  const handleUpdateTransaction = (transactionId: string, field: string, value: any) => {
+  const handleUpdateTransaction = async (transactionId: string, field: string, value: any) => {
     if (!can('canEditTransactions')) {
       return
     }
@@ -1763,6 +1771,16 @@ function App() {
       const finalCustomer = updateCustomerStats(updatedCustomer)
       setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
       setSelectedCustomer(finalCustomer)
+      try {
+        const response = await fetch(`${API_URL}/api/customers/${selectedCustomer.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(finalCustomer)
+        })
+        if (!response.ok) throw new Error('Transaction update failed')
+      } catch {
+        setErrorMessage(language === 'tr' ? 'Satır buluta kaydedilemedi.' : language === 'en' ? 'Row could not be saved to the cloud.' : 'تعذر حفظ السطر في السحابة.')
+      }
       if (currentUser) {
         const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
         const text = language === 'tr'
@@ -1775,7 +1793,7 @@ function App() {
     }
   }
 
-  const handleDeleteTransaction = (transactionId: string) => {
+  const handleDeleteTransaction = async (transactionId: string) => {
     if (!can('canDeleteTransactions')) {
       alert(language === 'tr' ? 'İşlem silme yetkiniz yok.' : language === 'en' ? 'You do not have permission to delete transactions.' : 'ليس لديك صلاحية لحذف المعاملات.')
       return
@@ -1794,6 +1812,16 @@ function App() {
         const finalCustomer = updateCustomerStats(updatedCustomer)
         setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
         setSelectedCustomer(finalCustomer)
+        try {
+          const response = await fetch(`${API_URL}/api/customers/${selectedCustomer.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalCustomer)
+          })
+          if (!response.ok) throw new Error('Transaction delete failed')
+        } catch {
+          setErrorMessage(language === 'tr' ? 'Satır silme işlemi buluta kaydedilemedi.' : language === 'en' ? 'Row deletion could not be saved to the cloud.' : 'تعذر حفظ حذف السطر في السحابة.')
+        }
         if (currentUser) {
           const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
           const text = language === 'tr'
@@ -1872,6 +1900,21 @@ function App() {
       ...t,
       [newColumn.id]: type === 'number' ? 0 : ''
     })))
+
+    customers.forEach((customer) => {
+      const updatedCustomer = {
+        ...customer,
+        transactions: (customer.transactions || []).map((transaction) => ({
+          ...transaction,
+          [newColumn.id]: type === 'number' ? 0 : ''
+        }))
+      }
+      fetch(`${API_URL}/api/customers/${customer.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedCustomer)
+      }).catch(() => setErrorMessage(language === 'tr' ? 'Özel kolon buluta kaydedilemedi.' : language === 'en' ? 'Custom column could not be saved to the cloud.' : 'تعذر حفظ العمود المخصص في السحابة.'))
+    })
     
     setShowAddColumnModal(false)
   }
@@ -1884,6 +1927,21 @@ function App() {
         delete newT[columnId]
         return newT
       }))
+      customers.forEach((customer) => {
+        const updatedCustomer = {
+          ...customer,
+          transactions: (customer.transactions || []).map((transaction) => {
+            const nextTransaction = { ...transaction }
+            delete nextTransaction[columnId]
+            return nextTransaction
+          })
+        }
+        fetch(`${API_URL}/api/customers/${customer.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedCustomer)
+        }).catch(() => setErrorMessage(language === 'tr' ? 'Özel kolon silme işlemi buluta kaydedilemedi.' : language === 'en' ? 'Custom column deletion could not be saved to the cloud.' : 'تعذر حفظ حذف العمود المخصص في السحابة.'))
+      })
     }
   }
 
