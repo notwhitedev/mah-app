@@ -1142,13 +1142,19 @@ function App() {
       sidebarCollapsed,
       language
     }
-    fetch(`${API_URL}/api/settings/${storageOwnerId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings)
-    }).catch(() => {
-      setErrorMessage(language === 'tr' ? 'Ayarlar buluta kaydedilemedi.' : language === 'en' ? 'Settings could not be saved to the cloud.' : 'تعذر حفظ الإعدادات في السحابة.')
-    })
+    const saveTimer = window.setTimeout(() => {
+      fetch(`${API_URL}/api/settings/${storageOwnerId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      }).then((response) => {
+        if (!response.ok) throw new Error('Settings save failed')
+      }).catch(() => {
+        setErrorMessage(language === 'tr' ? 'Ayarlar buluta kaydedilemedi.' : language === 'en' ? 'Settings could not be saved to the cloud.' : 'تعذر حفظ الإعدادات في السحابة.')
+      })
+    }, 400)
+
+    return () => window.clearTimeout(saveTimer)
   }, [currencyRates, customColumns, employeeActivities, darkMode, sidebarCollapsed, language, currentUser, settingsLoaded])
 
   useEffect(() => {
