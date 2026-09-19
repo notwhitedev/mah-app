@@ -1283,17 +1283,7 @@ function App() {
           setErrorMessage(language === 'tr' ? 'Müşteri silinemedi.' : language === 'en' ? 'Failed to delete customer.' : 'فشل حذف العميل.')
         }
       } catch (err) {
-        // Fallback: localStorage'dan sil
-        setCustomers(customers.filter((c: Customer) => c.id !== customerId))
-        if (currentUser && customerToDelete) {
-          const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-          const text = language === 'tr'
-            ? `${userName} "${customerToDelete.name}" müşterisini sildi.`
-            : language === 'en'
-              ? `${userName} deleted customer "${customerToDelete.name}".`
-              : `${userName} حذف العميل "${customerToDelete.name}".`
-          addEmployeeActivity(currentUser.id, text)
-        }
+        setErrorMessage(language === 'tr' ? 'Müşteri silinemedi. Bulut bağlantısını kontrol edin.' : language === 'en' ? 'Customer could not be deleted. Check the cloud connection.' : 'تعذر حذف العميل. تحقق من اتصال السحابة.')
       }
     }
   }
@@ -1668,49 +1658,11 @@ function App() {
             addEmployeeActivity(currentUser.id, text)
           }
         } else {
-          // Fallback: locale kaydet
-          setTransactions([...transactions, newTransaction])
-          if (selectedCustomer) {
-            const updatedCustomer = {
-              ...selectedCustomer,
-              transactions: [...(selectedCustomer.transactions || []), newTransaction]
-            }
-            const finalCustomer = updateCustomerStats(updatedCustomer)
-            setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
-            setSelectedCustomer(finalCustomer)
-            if (currentUser) {
-              const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-              const text = language === 'tr'
-                ? `${userName} "${selectedCustomer.name}" müşterisinin hesabına yeni satır ekledi.`
-                : language === 'en'
-                  ? `${userName} added a new row to customer "${selectedCustomer.name}" account.`
-                  : `${userName} أضاف سطرًا جديدًا إلى حساب العميل "${selectedCustomer.name}".`
-              addEmployeeActivity(currentUser.id, text)
-            }
-          }
+          setErrorMessage(language === 'tr' ? 'Satır eklenemedi. Bulut bağlantısını kontrol edin.' : language === 'en' ? 'Row could not be added. Check the cloud connection.' : 'تعذر إضافة السطر. تحقق من اتصال السحابة.')
         }
       }
     } catch (err) {
-      // Fallback: locale kaydet
-      setTransactions([...transactions, newTransaction])
-      if (selectedCustomer) {
-        const updatedCustomer = {
-          ...selectedCustomer,
-          transactions: [...(selectedCustomer.transactions || []), newTransaction]
-        }
-        const finalCustomer = updateCustomerStats(updatedCustomer)
-        setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
-        setSelectedCustomer(finalCustomer)
-        if (currentUser) {
-          const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-          const text = language === 'tr'
-            ? `${userName} "${selectedCustomer.name}" müşterisinin hesabına yeni satır ekledi.`
-            : language === 'en'
-              ? `${userName} added a new row to customer "${selectedCustomer.name}" account.`
-              : `${userName} أضاف سطرًا جديدًا إلى حساب العميل "${selectedCustomer.name}".`
-          addEmployeeActivity(currentUser.id, text)
-        }
-      }
+      setErrorMessage(language === 'tr' ? 'Satır eklenemedi. Bulut bağlantısını kontrol edin.' : language === 'en' ? 'Row could not be added. Check the cloud connection.' : 'تعذر إضافة السطر. تحقق من اتصال السحابة.')
     }
   }
 
