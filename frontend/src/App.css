@@ -2358,6 +2358,125 @@ body.dark-mode .right-sidebar.collapsed {
 .app.rtl .toast-notification { direction: rtl; }
 .app.rtl .toast-close { margin-left: 0; margin-right: auto; }
 
+/* Bottom navigation for every language direction */
+.main-content,
+.main-content.expanded {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding-bottom: 108px;
+}
+
+.right-sidebar,
+.app.rtl .right-sidebar {
+  top: auto !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 86px !important;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 0 !important;
+  border-top: 1px solid rgba(15, 118, 110, 0.16) !important;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.1) !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.right-sidebar.collapsed,
+.app.rtl .right-sidebar.collapsed {
+  width: 100% !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+
+.right-sidebar .menu-item,
+.app.rtl .right-sidebar .menu-item {
+  flex: 0 1 132px;
+  min-width: 84px;
+  height: 70px;
+  margin: 0;
+  padding: 9px 8px;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 13px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.right-sidebar.collapsed .menu-item,
+.app.rtl .right-sidebar.collapsed .menu-item {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-toggle,
+.app.rtl .sidebar-toggle,
+.sidebar-toggle.expanded,
+.app.rtl .sidebar-toggle.expanded {
+  right: 18px !important;
+  left: auto !important;
+  top: auto !important;
+  bottom: 18px !important;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(15, 118, 110, 0.18) !important;
+  border-radius: 14px;
+  background: #0f766e;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.28) !important;
+}
+
+.sidebar-toggle:not(.expanded) {
+  bottom: 96px !important;
+}
+
+.sidebar-toggle:hover {
+  background: #115e59;
+  color: #fff;
+}
+
+body.dark-mode .right-sidebar,
+body.dark-mode .app.rtl .right-sidebar {
+  background: rgba(16, 32, 36, 0.96) !important;
+  border-top-color: rgba(94, 234, 212, 0.16) !important;
+}
+
+@media (max-width: 700px) {
+  .main-content,
+  .main-content.expanded {
+    padding-bottom: 96px;
+  }
+
+  .right-sidebar,
+  .app.rtl .right-sidebar {
+    height: 78px !important;
+    justify-content: flex-start;
+  }
+
+  .right-sidebar .menu-item,
+  .app.rtl .right-sidebar .menu-item {
+    flex: 0 0 88px;
+    min-width: 88px;
+    height: 62px;
+  }
+
+  .sidebar-toggle:not(.expanded) {
+    bottom: 88px !important;
+  }
+}
+
 .dark-mode .settings-item label {
   color: #ffffff;
 }
