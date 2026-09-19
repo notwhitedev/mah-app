@@ -86,7 +86,7 @@ function App() {
   })
   const [customers, setCustomers] = useState<Customer[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessageState, setErrorMessageState] = useState('')
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' } | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
@@ -127,7 +127,8 @@ function App() {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' })
   const [loginError, setLoginError] = useState('')
   const [developerForm, setDeveloperForm] = useState({ username: '', password: '', country: '', name: '' })
-  const [developerMessage, setDeveloperMessage] = useState('')
+  const [developerMessageState, setDeveloperMessageState] = useState('')
+  const toastTimer = useRef<number | null>(null)
   const [showAllUsers, setShowAllUsers] = useState(false)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editingUserForm, setEditingUserForm] = useState({ username: '', password: '' })
@@ -605,15 +606,25 @@ function App() {
 
   const can = (permission: keyof EmployeePermissionSet) => getCurrentPermissions()[permission]
 
-  useEffect(() => {
-    const message = errorMessage || developerMessage
+  const showToast = (message: string, kind: 'success' | 'error') => {
+    if (!message) return
+    if (toastTimer.current) window.clearTimeout(toastTimer.current)
+    setToast({ message, kind })
+    toastTimer.current = window.setTimeout(() => setToast(null), 3000)
+  }
+
+  const setErrorMessage = (message: string) => {
+    setErrorMessageState(message)
+    if (message) showToast(message, 'error')
+  }
+
+  const setDeveloperMessage = (message: string) => {
+    setDeveloperMessageState(message)
     if (!message) return
     const lowered = message.toLocaleLowerCase()
-    const isError = Boolean(errorMessage) || ['hata', 'başarısız', 'eklenemedi', 'kaydedilemedi', 'zaten', 'boş', 'failed', 'already', 'could not'].some((word) => lowered.includes(word))
-    setToast({ message, kind: isError ? 'error' : 'success' })
-    const timer = window.setTimeout(() => setToast(null), 3000)
-    return () => window.clearTimeout(timer)
-  }, [errorMessage, developerMessage])
+    const isError = ['hata', 'başarısız', 'eklenemedi', 'kaydedilemedi', 'zaten', 'boş', 'failed', 'already', 'could not', 'تعذر', 'موجود'].some((word) => lowered.includes(word))
+    showToast(message, isError ? 'error' : 'success')
+  }
 
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -2085,7 +2096,7 @@ function App() {
                     onChange={(e) => setDeveloperForm({ ...developerForm, name: e.target.value })}
                   />
                 </div>
-                {developerMessage && <div className="success-message">{developerMessage}</div>}
+                {developerMessageState && <div className="success-message">{developerMessageState}</div>}
                 <button className="submit-button" onClick={handleCreateDeveloperUser}>{language === 'tr' ? 'Kaydet' : language === 'en' ? 'Save' : 'حفظ'}</button>
               </div>
             ) : (
@@ -2267,9 +2278,9 @@ function App() {
             ) : (
               <div className="form-container">
                 <h2>{t.addCustomer}</h2>
-                {errorMessage && (
+                {errorMessageState && (
                   <div className="error-message">
-                    {errorMessage}
+                    {errorMessageState}
                   </div>
                 )}
                 <form className="customer-form" onSubmit={handleAddCustomer}>

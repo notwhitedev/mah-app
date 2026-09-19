@@ -2477,6 +2477,26 @@ body.dark-mode .app.rtl .right-sidebar {
   }
 }
 
+/* Keep settings centered regardless of language direction or sidebar state. */
+.page-content:has(.settings-section) {
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding-top: 28px;
+}
+
+.page-content:has(.settings-section) > .form-container {
+  width: min(100%, 720px) !important;
+  margin-inline: auto !important;
+  align-self: center !important;
+  transform: none !important;
+}
+
+.page-content:has(.settings-section) .settings-section {
+  width: 100%;
+  max-width: none;
+  margin-inline: auto;
+}
+
 .dark-mode .settings-item label {
   color: #ffffff;
 }
