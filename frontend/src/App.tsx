@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import html2pdf from 'html2pdf.js'
 import { API_BASE_URL } from './api'
@@ -160,8 +160,9 @@ function App() {
       addCustomer: 'Müşteri Ekle',
       viewCustomers: 'Müşterileri Görüntüle',
       currencies: 'Para Birimleri',
-      darkMode: 'Dark Mode',
-      lightMode: 'Light Mode',
+      totalProfit: 'Toplam Kazanç',
+      darkMode: 'Karanlık Mod',
+      lightMode: 'Aydınlık Mod',
       addEmployee: 'İşçi Ekle',
       employees: 'İşçiler',
       employeesPage: 'Çalışanlar',
@@ -171,22 +172,6 @@ function App() {
       employeeCountry: 'Ülke',
       permissions: 'İzinler',
       managePermissions: 'İzinleri Yönet',
-      allowAddCustomers: 'Müşteri ekleyebilir',
-      allowEditCustomers: 'Müşteri düzenleyebilir',
-      allowDeleteCustomers: 'Müşteri silebilir',
-      allowAddTransactions: 'İşlem ekleyebilir',
-      allowEditTransactions: 'İşlem düzenleyebilir',
-      allowDeleteTransactions: 'İşlem silebilir',
-      allowManageEmployees: 'Çalışanları yönetebilir',
-      allowExportPdf: 'PDF indirebilir',
-      settings: 'Ayarlar',
-      back: 'Geri',
-      customerName: 'Ad Soyad',
-      phone: 'Telefon',
-      email: 'E-posta',
-      submit: 'Ekle',
-      search: 'Müşteri ara (isim, ID, telefon, e-posta)',
-      totalProfit: 'Toplam Kazanç',
       totalTransactions: 'Toplam İşlem',
       activeCustomers: 'Aktif Müşteri',
       totalLoss: 'Toplam Zarar',
@@ -284,11 +269,26 @@ function App() {
       senderCurrency: 'Gönderici Para Birimi',
       receiverCurrency: 'Alıcı Para Birimi',
       usd: 'USD',
-      currencyRateDisplay: '1 USD = {rate} {currency}'
+      currencyRateDisplay: '1 USD = {rate} {currency}',
+      back: 'Geri',
+      customerName: 'Müşteri Adı',
+      phone: 'Telefon',
+      email: 'E-posta',
+      submit: 'Ekle',
+      search: 'Müşteri ara (isim, ID, telefon, e-posta)',
+      allowAddCustomers: 'Müşteri ekleyebilir',
+      allowEditCustomers: 'Müşterileri düzenleyebilir',
+      allowDeleteCustomers: 'Müşterileri silebilir',
+      allowAddTransactions: 'İşlem ekleyebilir',
+      allowEditTransactions: 'İşlemleri düzenleyebilir',
+      allowDeleteTransactions: 'İşlemleri silebilir',
+      allowManageEmployees: 'Çalışanları yönetebilir',
+      allowExportPdf: 'PDF dışa aktarabilir',
+      settings: 'Ayarlar'
     },
     en: {
       appTitle: 'Remittance Accounting',
-      appSubtitle: 'Transaction and customer management dashboard',
+      appSubtitle: 'Transaction and customer tracking panel',
       statistics: 'Statistics',
       addCustomer: 'Add Customer',
       viewCustomers: 'View Customers',
@@ -753,12 +753,12 @@ function App() {
         transform: (customerName: string) => language === 'en'
           ? `User deleted customer "${customerName}".`
           : `المستخدم حذف العميل "${customerName}".`
+      },
       {
         match: /.*?"([^\"]+)" kullanıcısını sildi\./,
         transform: (userName: string) => language === 'en'
           ? `User deleted account "${userName}".`
           : `المستخدم حذف الحساب "${userName}".`
-      },
       },
       {
         match: /.*?"([^"]+)" müşterisinin hesabına yeni satır ekledi\./,
@@ -3191,3 +3191,4 @@ function App() {
 }
 
 export default App
+
