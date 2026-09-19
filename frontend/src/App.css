@@ -2349,3 +2349,233 @@ body.dark-mode .right-sidebar.collapsed {
   background-color: #4a4a4a;
   border-color: #667eea;
 }
+
+/* Modern visual system */
+:root {
+  --primary: #0f766e;
+  --primary-dark: #115e59;
+  --primary-glow: rgba(20, 184, 166, 0.24);
+  --accent: #f97316;
+  --ink: #172033;
+  --muted: #64748b;
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-strong: #ffffff;
+  --line: rgba(15, 118, 110, 0.14);
+  --shadow-md: 0 14px 40px rgba(15, 23, 42, 0.09);
+  --shadow-lg: 0 24px 70px rgba(15, 23, 42, 0.14);
+}
+
+body {
+  background:
+    radial-gradient(circle at 8% 4%, rgba(20, 184, 166, 0.13), transparent 24%),
+    radial-gradient(circle at 92% 90%, rgba(249, 115, 22, 0.1), transparent 23%),
+    #f4f8f7;
+  color: var(--ink);
+}
+
+.app::before {
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.05), transparent 42%);
+}
+
+.main-content {
+  padding: 32px clamp(20px, 4vw, 56px);
+}
+
+.app-header {
+  padding-bottom: 20px;
+  border-bottom-color: var(--line);
+}
+
+.app-header h1 {
+  background: linear-gradient(110deg, #0f766e, #0f4c5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.stats-panel,
+.form-container,
+.customers-container,
+.transactions-container {
+  border: 1px solid rgba(15, 118, 110, 0.12);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+}
+
+.stat-card,
+.customer-card,
+.developer-user-card,
+.activity-log-item {
+  border: 1px solid rgba(15, 118, 110, 0.11);
+  border-radius: 14px;
+  background: var(--surface-strong);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.stat-card:hover,
+.customer-card:hover,
+.developer-user-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(20, 184, 166, 0.38);
+  box-shadow: 0 16px 32px rgba(15, 118, 110, 0.12);
+}
+
+button,
+.submit-button,
+.toggle-button,
+.action-button,
+.back-button,
+.add-currency-button,
+.delete-button {
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+button:hover,
+.submit-button:hover,
+.toggle-button:hover,
+.action-button:hover,
+.back-button:hover {
+  transform: translateY(-1px);
+}
+
+.submit-button,
+.add-currency-button {
+  background: linear-gradient(135deg, #0f766e, #0f4c5c);
+  box-shadow: 0 8px 18px rgba(15, 118, 110, 0.2);
+}
+
+.submit-button:hover,
+.add-currency-button:hover {
+  background: linear-gradient(135deg, #115e59, #0c4a5a);
+  box-shadow: 0 12px 24px rgba(15, 118, 110, 0.28);
+}
+
+.toggle-button,
+.secondary-button,
+.back-button {
+  background: #eef8f6;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  color: #0f625d;
+}
+
+.toggle-button:hover,
+.secondary-button:hover,
+.back-button:hover {
+  background: #dff3ef;
+  border-color: rgba(15, 118, 110, 0.35);
+}
+
+.delete-button,
+.delete-currency-button {
+  border-radius: 9px;
+}
+
+input,
+select,
+textarea,
+.search-input,
+.form-group input,
+.user-edit-row input {
+  border: 1px solid #d7e5e3;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--ink);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.search-input:focus {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.12);
+  outline: none;
+}
+
+.language-buttons,
+.developer-actions,
+.user-card-actions {
+  gap: 10px;
+}
+
+.lang-button.active {
+  background: linear-gradient(135deg, #0f766e, #0f4c5c);
+  border-color: #0f766e;
+}
+
+.line-fill {
+  background: linear-gradient(90deg, #14b8a6, #f97316);
+}
+
+.stat-icon {
+  background: #e2f5f1;
+  color: #0f766e;
+}
+
+.login-container {
+  box-shadow: var(--shadow-lg);
+  border-top: 4px solid #0f766e;
+}
+
+body.dark-mode {
+  background:
+    radial-gradient(circle at 10% 5%, rgba(20, 184, 166, 0.13), transparent 25%),
+    #101a1d !important;
+  color: #e5f3f1 !important;
+}
+
+body.dark-mode .stats-panel,
+body.dark-mode .form-container,
+body.dark-mode .customers-container,
+body.dark-mode .transactions-container {
+  background: rgba(20, 31, 35, 0.94) !important;
+  border-color: rgba(94, 234, 212, 0.13) !important;
+}
+
+body.dark-mode .stat-card,
+body.dark-mode .customer-card,
+body.dark-mode .developer-user-card,
+body.dark-mode .activity-log-item {
+  background: #1a292d !important;
+  border-color: rgba(94, 234, 212, 0.14) !important;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea,
+body.dark-mode .search-input,
+body.dark-mode .form-group input,
+body.dark-mode .user-edit-row input {
+  background: #162326 !important;
+  border-color: rgba(94, 234, 212, 0.2) !important;
+  color: #e5f3f1 !important;
+}
+
+@media (max-width: 700px) {
+  .main-content {
+    padding: 22px 14px 28px;
+  }
+
+  .stats-panel,
+  .form-container,
+  .customers-container,
+  .transactions-container {
+    border-radius: 14px;
+  }
+
+  .developer-actions,
+  .language-buttons {
+    flex-wrap: wrap;
+  }
+
+  .submit-button,
+  .toggle-button,
+  .action-button {
+    min-height: 42px;
+  }
+}
