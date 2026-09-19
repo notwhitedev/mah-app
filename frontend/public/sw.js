@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mah-app-v1';
+const CACHE_NAME = 'mah-app-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -33,13 +33,7 @@ self.addEventListener('fetch', event => {
   }
 
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-
-        return fetch(event.request).then(response => {
+    fetch(event.request).then(response => {
           if (!response || response.status !== 200 || response.type === 'error') {
             return response;
           }
@@ -51,8 +45,7 @@ self.addEventListener('fetch', event => {
             });
 
           return response;
-        });
-      })
+        })
       .catch(() => {
         return caches.match('/index.html');
       })
