@@ -540,10 +540,18 @@ body.dark-mode .right-sidebar.collapsed {
 
 .stat-value.profit {
   color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 700;
 }
 
 .stat-value.loss {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 700;
 }
 
 /* Activity Lines */
@@ -1767,15 +1775,19 @@ body.dark-mode .right-sidebar.collapsed {
 }
 
 .profit-loss-cell {
-  font-weight: 600;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .profit-loss-cell.profit {
   color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
 }
 
 .profit-loss-cell.loss {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .actions-cell {

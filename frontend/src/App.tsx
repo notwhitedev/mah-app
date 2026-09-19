@@ -154,7 +154,7 @@ function App() {
   // Dil çevirileri
   const translations = {
     tr: {
-      appTitle: 'Havale Muhasebesi',
+      appTitle: 'Flash',
       appSubtitle: 'İşlem ve müşteri takip paneli',
       statistics: 'İstatistikler',
       addCustomer: 'Müşteri Ekle',
@@ -287,7 +287,7 @@ function App() {
       settings: 'Ayarlar'
     },
     en: {
-      appTitle: 'Remittance Accounting',
+      appTitle: 'Flash',
       appSubtitle: 'Transaction and customer tracking panel',
       statistics: 'Statistics',
       addCustomer: 'Add Customer',
@@ -420,7 +420,7 @@ function App() {
       currencyRateDisplay: '1 USD = {rate} {currency}'
     },
     ar: {
-      appTitle: 'محاسب الحوالات',
+      appTitle: 'Flash',
       appSubtitle: 'لوحة تتبع المعاملات والعملاء',
       statistics: 'الإحصائيات',
       addCustomer: 'إضافة عميل',
@@ -1389,19 +1389,19 @@ function App() {
     })
 
     const summaryLabels = {
-      tr: { title: 'Havale Muhasebesi', date: 'Tarih', lena: 'Bize', lekum: 'Sizin', lenaText: 'Bize', lekumText: 'Sizin', currency: 'Para Birimi' },
-      en: { title: 'Remittance Accounting', date: 'Date', lena: 'To Us', lekum: 'To You', lenaText: 'To Us', lekumText: 'To You', currency: 'Currency' },
-      ar: { title: 'محاسب الحوالات', date: 'التاريخ', lena: 'لنا', lekum: 'لكم', lenaText: 'لنا', lekumText: 'لكم', currency: 'العملة' }
+      tr: { title: 'Flash', date: 'Tarih', lena: 'Sizin', lekum: 'Bize', lenaText: 'Sizin', lekumText: 'Bize', currency: 'Para Birimi' },
+      en: { title: 'Flash', date: 'Date', lena: 'To You', lekum: 'To Us', lenaText: 'To You', lekumText: 'To Us', currency: 'Currency' },
+      ar: { title: 'Flash', date: 'التاريخ', lena: 'لكم', lekum: 'لنا', lenaText: 'لكم', lekumText: 'لنا', currency: 'العملة' }
     } as const
 
     const labels = summaryLabels[language]
-    const pdfTitle = 'M.A.H'
+    const pdfTitle = 'Flash'
     const pdfTitleHtml = `<span style="display:inline-block; text-align:center; font-family: Tahoma, Arial, sans-serif;">${pdfTitle}</span>`
     const pdfFooterHtml = language === 'ar'
-      ? '<span dir="rtl" style="display:inline-block; direction:rtl; text-align:center; unicode-bidi:plaintext; font-family: Tahoma, Arial, sans-serif;">M.A.H</span>'
+      ? '<span dir="rtl" style="display:inline-block; direction:rtl; text-align:center; unicode-bidi:plaintext; font-family: Tahoma, Arial, sans-serif;">Flash</span>'
       : language === 'en'
-        ? 'M.A.H'
-        : 'M.A.H'
+        ? 'Flash'
+        : 'Flash'
     const currentDate = new Date().toLocaleDateString(language === 'ar' ? 'ar-EG' : 'tr-TR', {
       day: '2-digit',
       month: '2-digit',
@@ -2204,7 +2204,7 @@ function App() {
                 </div>
                 <div className="stat-info">
                   <p className="stat-label">{t.totalProfit}</p>
-                  <p className={`stat-value ${stats.totalProfit > 0 ? 'profit' : ''}`}>{stats.totalProfit > 0 ? stats.totalProfit.toFixed(1) : '-'}</p>
+                  <p className={`stat-value ${stats.totalProfit > 0 ? 'profit' : ''}`}>{stats.totalProfit > 0 ? stats.totalProfit.toFixed(1) : '0'}</p>
                 </div>
               </div>
               <div className="stat-card">
@@ -2243,7 +2243,7 @@ function App() {
                 </div>
                 <div className="stat-info">
                   <p className="stat-label">{t.totalLoss}</p>
-                  <p className={`stat-value ${stats.totalLoss > 0 ? 'loss' : ''}`}>{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '-'}</p>
+                  <p className={`stat-value ${stats.totalLoss > 0 ? 'loss' : ''}`}>{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '0'}</p>
                 </div>
               </div>
             </div>
@@ -2459,11 +2459,11 @@ function App() {
                           </div>
                           <div className="customer-stat">
                             <span className="stat-label">{t.profitLabel}</span>
-                            <span className="stat-value profit">{customerStats.profit > 0 ? customerStats.profit.toFixed(1) : '-'}</span>
+                            <span className="stat-value profit">{customerStats.profit > 0 ? customerStats.profit.toFixed(1) : '0'}</span>
                           </div>
                           <div className="customer-stat">
                             <span className="stat-label">{t.lossLabel}</span>
-                            <span className="stat-value loss">{customerStats.loss > 0 ? customerStats.loss.toFixed(1) : '-'}</span>
+                            <span className="stat-value loss">{customerStats.loss > 0 ? customerStats.loss.toFixed(1) : '0'}</span>
                           </div>
                         </div>
                         <div className="customer-actions">
@@ -2792,7 +2792,7 @@ function App() {
                               )}
                             </td>
                             <td className={`profit-loss-cell ${transaction.profitLoss > 0 ? 'profit' : transaction.profitLoss < 0 ? 'loss' : ''}`}>
-                              {transaction.profitLoss !== 0 ? Math.abs(transaction.profitLoss).toFixed(1) : '-'}
+                              {transaction.profitLoss !== 0 ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
                             </td>
                             {customColumns.map(column => (
                               <td key={column.id}>
