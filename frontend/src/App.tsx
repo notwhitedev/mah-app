@@ -89,12 +89,6 @@ function App() {
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' } | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
-      {
-        match: /.*?"([^\"]+)" kullanıcısını sildi\./,
-        transform: (userName: string) => language === 'en'
-          ? `User deleted account "${userName}".`
-          : `المستخدم حذف الحساب "${userName}".`
-      },
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [contextMenu, setContextMenu] = useState<{ visible: boolean, x: number, y: number, type: string, id?: number | string }>({ visible: false, x: 0, y: 0, type: '', id: undefined })
   const [editingTransaction, setEditingTransaction] = useState<string | null>(null)
@@ -759,6 +753,12 @@ function App() {
         transform: (customerName: string) => language === 'en'
           ? `User deleted customer "${customerName}".`
           : `المستخدم حذف العميل "${customerName}".`
+      {
+        match: /.*?"([^\"]+)" kullanıcısını sildi\./,
+        transform: (userName: string) => language === 'en'
+          ? `User deleted account "${userName}".`
+          : `المستخدم حذف الحساب "${userName}".`
+      },
       },
       {
         match: /.*?"([^"]+)" müşterisinin hesabına yeni satır ekledi\./,
