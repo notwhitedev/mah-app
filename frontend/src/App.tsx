@@ -998,7 +998,7 @@ function App() {
       })
 
       if (!response.ok) {
-        throw new Error('Create user failed')
+        throw new Error(await response.text())
       }
 
       const data = await response.json()
@@ -1986,7 +1986,16 @@ function App() {
 
             <div className="developer-actions">
               <button className="toggle-button" onClick={() => setShowAllUsers(false)}>{language === 'tr' ? 'Kullanıcı Ekle' : language === 'en' ? 'Add User' : 'إضافة مستخدم'}</button>
-              <button className="toggle-button" onClick={() => setShowAllUsers(true)}>{language === 'tr' ? 'Tüm Kullanıcılar' : language === 'en' ? 'All Users' : 'كل المستخدمين'}</button>
+              <button className="toggle-button" onClick={async () => {
+                try {
+                  const response = await fetch(`${API_URL}/api/users`)
+                  if (!response.ok) throw new Error(await response.text())
+                  setAllUsers(await response.json())
+                  setShowAllUsers(true)
+                } catch {
+                  setDeveloperMessage(language === 'tr' ? 'Kullanıcılar sunucudan yüklenemedi.' : language === 'en' ? 'Users could not be loaded from the server.' : 'تعذر تحميل المستخدمين من الخادم.')
+                }
+              }}>{language === 'tr' ? 'Tüm Kullanıcılar' : language === 'en' ? 'All Users' : 'كل المستخدمين'}</button>
             </div>
 
             <div className="settings-item">
