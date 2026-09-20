@@ -468,6 +468,24 @@ body.dark-mode .right-sidebar.collapsed {
   background: linear-gradient(135deg, #8b5cf6 0%, #7376f1 100%) !important;
 }
 
+.profit-text {
+  color: #16a34a !important;
+  font-weight: 700;
+}
+
+.loss-text {
+  color: #dc2626 !important;
+  font-weight: 700;
+}
+
+.dark-mode .profit-text {
+  color: #22c55e !important;
+}
+
+.dark-mode .loss-text {
+  color: #ef4444 !important;
+}
+
 /* Stats Panel */
 .stats-panel {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.88));
@@ -2606,11 +2624,41 @@ body.dark-mode .right-sidebar.collapsed {
 
 .right-sidebar .menu-item:nth-child(3),
 .app.rtl .right-sidebar .menu-item:nth-child(3) {
-  order: 2;
+  order: 4;
   flex: 0 1 150px !important;
   min-width: 120px !important;
   height: 80px !important;
   margin: 0 auto !important;
+}
+
+.right-sidebar .menu-item:nth-child(1),
+.app.rtl .right-sidebar .menu-item:nth-child(1) {
+  order: 1;
+}
+
+.right-sidebar .menu-item:nth-child(2),
+.app.rtl .right-sidebar .menu-item:nth-child(2) {
+  order: 2;
+}
+
+.right-sidebar .menu-item:nth-child(4),
+.app.rtl .right-sidebar .menu-item:nth-child(4) {
+  order: 3;
+}
+
+.right-sidebar .menu-item:nth-child(5),
+.app.rtl .right-sidebar .menu-item:nth-child(5) {
+  order: 5;
+}
+
+.right-sidebar .menu-item:nth-child(6),
+.app.rtl .right-sidebar .menu-item:nth-child(6) {
+  order: 6;
+}
+
+.right-sidebar .menu-item:nth-child(7),
+.app.rtl .right-sidebar .menu-item:nth-child(7) {
+  order: 7;
 }
 
 .right-sidebar.collapsed .menu-item,

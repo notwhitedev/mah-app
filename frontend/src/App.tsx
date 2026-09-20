@@ -1818,6 +1818,14 @@ function App() {
     }
   }
 
+  const calculateProfitLoss = (amount: string, deliveryAmount: string, senderCurrency: string, receiverCurrency: string) => {
+    const amountNum = parseFloat(amount) || 0
+    const deliveryAmountNum = parseFloat(deliveryAmount) || 0
+    const senderRate = currencyRates.find(r => r.currency === senderCurrency)?.rate || 1
+    const receiverRate = currencyRates.find(r => r.currency === receiverCurrency)?.rate || 1
+    return (amountNum / senderRate) - (deliveryAmountNum / receiverRate)
+  }
+
   const handleSaveTransactionFromModal = async () => {
     if (!selectedTransactionForModal) return
 
@@ -2893,7 +2901,9 @@ function App() {
                               )}
                             </td>
                             <td>
-                              <span className="cell-value">{transaction.profitLoss ? transaction.profitLoss.toFixed(1) : '0'}</span>
+                              <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
+                                {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                              </span>
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
@@ -3034,6 +3044,13 @@ function App() {
                   onChange={(e) => {
                     if (selectedTransactionForModal) {
                       const updated = { ...selectedTransactionForModal, senderCurrency: e.target.value }
+                      const profitLoss = calculateProfitLoss(
+                        updated.amount || '',
+                        updated.deliveryAmount || '',
+                        e.target.value,
+                        updated.receiverCurrency || 'USD'
+                      )
+                      updated.profitLoss = profitLoss
                       setSelectedTransactionForModal(updated)
                     }
                   }}
@@ -3052,6 +3069,13 @@ function App() {
                   onChange={(e) => {
                     if (selectedTransactionForModal) {
                       const updated = { ...selectedTransactionForModal, amount: e.target.value }
+                      const profitLoss = calculateProfitLoss(
+                        e.target.value,
+                        updated.deliveryAmount || '',
+                        updated.senderCurrency || 'USD',
+                        updated.receiverCurrency || 'USD'
+                      )
+                      updated.profitLoss = profitLoss
                       setSelectedTransactionForModal(updated)
                     }
                   }}
@@ -3083,6 +3107,13 @@ function App() {
                   onChange={(e) => {
                     if (selectedTransactionForModal) {
                       const updated = { ...selectedTransactionForModal, receiverCurrency: e.target.value }
+                      const profitLoss = calculateProfitLoss(
+                        updated.amount || '',
+                        updated.deliveryAmount || '',
+                        updated.senderCurrency || 'USD',
+                        e.target.value
+                      )
+                      updated.profitLoss = profitLoss
                       setSelectedTransactionForModal(updated)
                     }
                   }}
@@ -3101,6 +3132,13 @@ function App() {
                   onChange={(e) => {
                     if (selectedTransactionForModal) {
                       const updated = { ...selectedTransactionForModal, deliveryAmount: e.target.value }
+                      const profitLoss = calculateProfitLoss(
+                        updated.amount || '',
+                        e.target.value,
+                        updated.senderCurrency || 'USD',
+                        updated.receiverCurrency || 'USD'
+                      )
+                      updated.profitLoss = profitLoss
                       setSelectedTransactionForModal(updated)
                     }
                   }}
@@ -3126,7 +3164,7 @@ function App() {
                 <input
                   type="text"
                   value={selectedTransactionForModal?.profitLoss?.toFixed(1) || '0'}
-                  className="modal-input"
+                  className={`modal-input ${selectedTransactionForModal?.profitLoss && selectedTransactionForModal.profitLoss > 0 ? 'profit-text' : selectedTransactionForModal?.profitLoss && selectedTransactionForModal.profitLoss < 0 ? 'loss-text' : ''}`}
                   disabled
                 />
               </div>
