@@ -685,6 +685,26 @@ body.dark-mode .right-sidebar.collapsed {
   color: #ffffff;
 }
 
+.daily-table {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.compact-table {
+  font-size: 11px;
+}
+
+.compact-table th,
+.compact-table td {
+  padding: 6px 8px;
+  font-size: 11px;
+}
+
+.compact-table .cell-value {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
 .dark-mode .activity-lines {
   border-top-color: #4a4a4a;
 }

@@ -188,6 +188,9 @@ function App() {
       receiver: 'Alıcı',
       deliveryAmount: 'Teslim Tutar',
       profitLoss: 'Kazanç/Zarar',
+      sender: 'Gönderen',
+      senderCurrency: 'Gönderici Kur',
+      receiverCurrency: 'Alıcı Kur',
       currencySettings: 'Para Birimi Ayarları',
       position: 'Pozisyon',
       salary: 'Maaş',
@@ -226,6 +229,7 @@ function App() {
       customers: 'Müşteriler',
       id: 'ID',
       customer: 'Müşteri',
+      date: 'Tarih',
       noTransactions: 'Henüz işlem yok',
       newTransaction: 'Yeni İşlem Ekle',
       deleteColumn: 'Bölme Sil',
@@ -295,7 +299,7 @@ function App() {
       addNote: 'Not Ekle',
       note: 'Not',
       transactionManagement: 'İşlem Yönetimi',
-      todayTransactions: 'Bugün Eklenen Satırlar',
+      todayTransactions: 'Günlük',
       noTodayTransactions: 'Bugün henüz satır eklenmedi'
     },
     en: {
@@ -344,6 +348,9 @@ function App() {
       receiver: 'Receiver',
       deliveryAmount: 'Delivery Amount',
       profitLoss: 'Profit/Loss',
+      sender: 'Sender',
+      senderCurrency: 'Sender Currency',
+      receiverCurrency: 'Receiver Currency',
       currencySettings: 'Currency Settings',
       position: 'Position',
       salary: 'Salary',
@@ -382,6 +389,7 @@ function App() {
       customers: 'Customers',
       id: 'ID',
       customer: 'Customer',
+      date: 'Date',
       noTransactions: 'No transactions yet',
       newTransaction: 'Add New Transaction',
       deleteColumn: 'Delete Column',
@@ -436,7 +444,7 @@ function App() {
       addNote: 'Add Note',
       note: 'Note',
       transactionManagement: 'Transaction Management',
-      todayTransactions: 'Today Added Rows',
+      todayTransactions: 'Daily',
       noTodayTransactions: 'No rows added today'
     },
     ar: {
@@ -485,6 +493,9 @@ function App() {
       receiver: 'المستلم',
       deliveryAmount: 'مبلغ التسليم',
       profitLoss: 'الربح/الخسارة',
+      sender: 'المرسل',
+      senderCurrency: 'عملة المرسل',
+      receiverCurrency: 'عملة المستلم',
       currencySettings: 'إعدادات العملة',
       position: 'الموقع',
       salary: 'الراتب',
@@ -523,6 +534,7 @@ function App() {
       customers: 'العملاء',
       id: 'المعرف',
       customer: 'العميل',
+      date: 'التاريخ',
       noTransactions: 'لا توجد معاملات بعد',
       newTransaction: 'إضافة معاملة جديدة',
       deleteColumn: 'حذف العمود',
@@ -577,7 +589,7 @@ function App() {
       addNote: 'إضافة ملاحظة',
       note: 'ملاحظة',
       transactionManagement: 'إدارة المعاملات',
-      todayTransactions: 'الصفوف المضافة اليوم',
+      todayTransactions: 'يومي',
       noTodayTransactions: 'لم يتم إضافة صفوف اليوم'
     }
   }
@@ -2388,31 +2400,59 @@ function App() {
             {todayTransactions.length > 0 && (
               <div className="today-transactions-container">
                 <h3>{t.todayTransactions}</h3>
-                <div className="table-container">
-                  <table className="excel-table">
+                <div className="table-container daily-table">
+                  <table className="excel-table compact-table">
                     <thead>
                       <tr>
-                        <th data-column="date">{t.date || 'Tarih'}</th>
-                        <th data-column="customer">{t.customer || 'Müşteri'}</th>
-                        <th data-column="amount">{t.amount || 'Tutar'}</th>
-                        <th data-column="profitLoss">{t.profitLoss || 'Kazanç/Zarar'}</th>
+                        <th data-column="id">{t.id}</th>
+                        <th data-column="date">{t.date}</th>
+                        <th data-column="sender">{t.sender}</th>
+                        <th data-column="senderCurrency">{t.senderCurrency}</th>
+                        <th data-column="amount">{t.amount}</th>
+                        <th data-column="receiver">{t.receiver}</th>
+                        <th data-column="receiverCurrency">{t.receiverCurrency}</th>
+                        <th data-column="deliveryAmount">{t.deliveryAmount}</th>
+                        <th data-column="profitLoss">{t.profitLoss}</th>
+                        <th data-column="status">{t.status}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {todayTransactions.map((transaction) => (
                         <tr key={transaction.id}>
                           <td className="readonly-cell">
+                            <span className="cell-value">{transaction.id}</span>
+                          </td>
+                          <td className="readonly-cell">
                             <span className="cell-value">{transaction.date}</span>
                           </td>
                           <td className="readonly-cell">
-                            <span className="cell-value">{transaction.customerName || '-'}</span>
+                            <span className="cell-value">{transaction.sender || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.senderCurrency || '-'}</span>
                           </td>
                           <td className="readonly-cell">
                             <span className="cell-value">{transaction.amount || '-'}</span>
                           </td>
                           <td className="readonly-cell">
+                            <span className="cell-value">{transaction.receiver || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.receiverCurrency || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
                             <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
                               {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                            </span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">
+                              {transaction.status === 'pending' ? t.pending :
+                               transaction.status === 'completed' ? t.completed :
+                               transaction.status === 'cancelled' ? t.cancelled : transaction.status}
                             </span>
                           </td>
                         </tr>
