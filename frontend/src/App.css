@@ -1748,6 +1748,15 @@ body.dark-mode .right-sidebar.collapsed {
   background-color: #3a3a3a;
 }
 
+.excel-table tbody tr.editing-row .cell-value {
+  display: none;
+}
+
+.excel-table tbody tr:not(.editing-row) .table-input,
+.excel-table tbody tr:not(.editing-row) .table-select {
+  display: none;
+}
+
 .excel-table tbody tr:hover {
   background-color: #f1f5f9;
 }
@@ -2586,7 +2595,7 @@ body.dark-mode .right-sidebar.collapsed {
 
 .right-sidebar .menu-item:nth-child(3),
 .app.rtl .right-sidebar .menu-item:nth-child(3) {
-  order: 3;
+  order: 2;
   flex: 0 1 140px !important;
   min-width: 110px !important;
   height: 75px !important;

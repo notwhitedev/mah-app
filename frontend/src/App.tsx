@@ -89,6 +89,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' } | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [editingRowId, setEditingRowId] = useState<string | null>(null)
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [contextMenu, setContextMenu] = useState<{ visible: boolean, x: number, y: number, type: string, id?: number | string }>({ visible: false, x: 0, y: 0, type: '', id: undefined })
@@ -1697,6 +1698,7 @@ function App() {
       if (response.ok) {
         const apiTransaction = await response.json()
         setTransactions([...transactions, apiTransaction])
+        setEditingRowId(null)
 
         // İşlemi müşteriye kaydet
         const updatedCustomer = {
@@ -2785,125 +2787,176 @@ function App() {
                       </thead>
                       <tbody>
                         {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name).map((transaction) => (
-                          <tr key={transaction.id}>
+                          <tr key={transaction.id} className={editingRowId === transaction.id ? 'editing-row' : ''}>
                             <td className="readonly-cell">{transaction.id}</td>
                             <td>
-                              <input
-                                type="text"
-                                value={transaction.date}
-                                onChange={(e) => handleUpdateTransaction(transaction.id, 'date', e.target.value)}
-                                className="table-input"
-                              />
+                              {editingRowId === transaction.id ? (
+                                <input
+                                  type="text"
+                                  value={transaction.date}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'date', e.target.value)}
+                                  className="table-input"
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.date}</span>
+                              )}
                             </td>
                             <td>
-                              <select
-                                value={transaction.sender || ''}
-                                onChange={(e) => handleUpdateTransaction(transaction.id, 'sender', e.target.value)}
-                                className="table-select"
-                              >
-                                <option value="">{t.selectCustomer}</option>
-                                {customers.map((customer) => (
-                                  <option key={customer.id} value={customer.name}>{customer.name}</option>
-                                ))}
-                              </select>
+                              {editingRowId === transaction.id ? (
+                                <select
+                                  value={transaction.sender || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'sender', e.target.value)}
+                                  className="table-select"
+                                >
+                                  <option value="">{t.selectCustomer}</option>
+                                  {customers.map((customer) => (
+                                    <option key={customer.id} value={customer.name}>{customer.name}</option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <span className="cell-value">{transaction.sender || '-'}</span>
+                              )}
                             </td>
                             <td>
-                              <select
-                                value={transaction.senderCurrency}
-                                onChange={(e) => handleUpdateTransaction(transaction.id, 'senderCurrency', e.target.value)}
-                                className="table-select"
-                              >
-                                {currencyRates.map((curr, idx) => (
-                                  <option key={idx} value={curr.currency}>{curr.currency}</option>
-                                ))}
-                              </select>
+                              {editingRowId === transaction.id ? (
+                                <select
+                                  value={transaction.senderCurrency}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'senderCurrency', e.target.value)}
+                                  className="table-select"
+                                >
+                                  {currencyRates.map((curr, idx) => (
+                                    <option key={idx} value={curr.currency}>{curr.currency}</option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <span className="cell-value">{transaction.senderCurrency}</span>
+                              )}
                             </td>
                             <td>
-                              <select
-                                value={transaction.receiver || ''}
-                                onChange={(e) => handleUpdateTransaction(transaction.id, 'receiver', e.target.value)}
-                                className="table-select"
-                              >
-                                <option value="">{t.selectCustomer}</option>
-                                {customers.map((customer) => (
-                                  <option key={customer.id} value={customer.name}>{customer.name}</option>
-                                ))}
-                              </select>
+                              {editingRowId === transaction.id ? (
+                                <select
+                                  value={transaction.receiver || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'receiver', e.target.value)}
+                                  className="table-select"
+                                >
+                                  <option value="">{t.selectCustomer}</option>
+                                  {customers.map((customer) => (
+                                    <option key={customer.id} value={customer.name}>{customer.name}</option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <span className="cell-value">{transaction.receiver || '-'}</span>
+                              )}
                             </td>
                             <td>
-                              <select
-                                value={transaction.receiverCurrency}
-                                onChange={(e) => handleUpdateTransaction(transaction.id, 'receiverCurrency', e.target.value)}
-                                className="table-select"
-                              >
-                                {currencyRates.map((curr, idx) => (
-                                  <option key={idx} value={curr.currency}>{curr.currency}</option>
-                                ))}
-                              </select>
+                              {editingRowId === transaction.id ? (
+                                <select
+                                  value={transaction.receiverCurrency}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'receiverCurrency', e.target.value)}
+                                  className="table-select"
+                                >
+                                  {currencyRates.map((curr, idx) => (
+                                    <option key={idx} value={curr.currency}>{curr.currency}</option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <span className="cell-value">{transaction.receiverCurrency}</span>
+                              )}
                             </td>
                             <td>
-                              <input
-                                type="text"
-                                value={transaction.amount || ''}
-                                onChange={(e) => handleUpdateTransaction(transaction.id, 'amount', e.target.value)}
-                                className="table-input"
-                              />
+                              {editingRowId === transaction.id ? (
+                                <input
+                                  type="text"
+                                  value={transaction.amount || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'amount', e.target.value)}
+                                  className="table-input"
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.amount || '-'}</span>
+                              )}
                             </td>
                             <td>
-                              <input
-                                type="text"
-                                value={transaction.deliveryAmount || ''}
-                                onChange={(e) => handleUpdateTransaction(transaction.id, 'deliveryAmount', e.target.value)}
-                                className="table-input"
-                              />
+                              {editingRowId === transaction.id ? (
+                                <input
+                                  type="text"
+                                  value={transaction.deliveryAmount || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'deliveryAmount', e.target.value)}
+                                  className="table-input"
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
+                              )}
                             </td>
                             <td>
-                              <input
-                                type="text"
-                                value={transaction.note || ''}
-                                onChange={(e) => handleUpdateTransaction(transaction.id, 'note', e.target.value)}
-                                className="table-input"
-                              />
+                              {editingRowId === transaction.id ? (
+                                <input
+                                  type="text"
+                                  value={transaction.note || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'note', e.target.value)}
+                                  className="table-input"
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.note || '-'}</span>
+                              )}
                             </td>
                             {customColumns.map(column => (
                               <td key={column.id}>
-                                <input
-                                  type={column.type === 'number' ? 'number' : 'text'}
-                                  value={transaction[column.id] || (column.type === 'number' ? 0 : '')}
-                                  onChange={(e) => handleUpdateTransaction(transaction.id, column.id, column.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
-                                  className="table-input"
-                                />
+                                {editingRowId === transaction.id ? (
+                                  <input
+                                    type={column.type === 'number' ? 'number' : 'text'}
+                                    value={transaction[column.id] || (column.type === 'number' ? 0 : '')}
+                                    onChange={(e) => handleUpdateTransaction(transaction.id, column.id, column.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
+                                    className="table-input"
+                                  />
+                                ) : (
+                                  <span className="cell-value">
+                                    {column.type === 'number' ? transaction[column.id] || 0 : transaction[column.id] || '-'}
+                                  </span>
+                                )}
                               </td>
                             ))}
                             <td>
-                              <select
-                                value={transaction.status}
-                                onChange={(e) => handleUpdateTransaction(transaction.id, 'status', e.target.value)}
-                                className="table-select"
-                              >
-                                <option value="pending">{t.pending}</option>
-                                <option value="completed">{t.completed}</option>
-                                <option value="cancelled">{t.cancelled}</option>
-                              </select>
+                              {editingRowId === transaction.id ? (
+                                <select
+                                  value={transaction.status}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'status', e.target.value)}
+                                  className="table-select"
+                                >
+                                  <option value="pending">{t.pending}</option>
+                                  <option value="completed">{t.completed}</option>
+                                  <option value="cancelled">{t.cancelled}</option>
+                                </select>
+                              ) : (
+                                <span className="cell-value">
+                                  {transaction.status === 'pending' ? t.pending :
+                                     transaction.status === 'completed' ? t.completed :
+                                     transaction.status === 'cancelled' ? t.cancelled : transaction.status}
+                                </span>
+                              )}
                             </td>
                             <td className="action-buttons-cell">
                               <button
                                 className="table-action-button edit-button"
                                 onClick={() => {
-                                  setSelectedTransactionForModal(transaction)
-                                  // Müşteriyi seç
-                                  const senderCustomer = customers.find(c => c.name === transaction.sender)
-                                  if (senderCustomer) {
-                                    setSelectedCustomer(senderCustomer)
+                                  if (editingRowId === transaction.id) {
+                                    setEditingRowId(null)
+                                  } else {
+                                    setEditingRowId(transaction.id)
                                   }
-                                  setShowTransactionModal(true)
                                 }}
-                                title={t.editButton}
+                                title={editingRowId === transaction.id ? 'Kaydet' : 'Düzenle'}
                               >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                </svg>
+                                {editingRowId === transaction.id ? (
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                    <path d="M22 12v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5"></path>
+                                  </svg>
+                                ) : (
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                  </svg>
+                                )}
                               </button>
                               <button
                                 className="table-action-button delete-button"
@@ -3403,7 +3456,7 @@ function App() {
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
-          <span>{language === 'tr' ? 'İşlemekle' : language === 'en' ? 'Manage' : 'إدارة'}</span>
+          <span>{language === 'tr' ? 'İşlem Ekle' : language === 'en' ? 'Add Transaction' : 'إضافة معاملة'}</span>
         </div>
         {currentUser && (currentUser.role === 'owner' || currentUser.role === 'developer' || currentUser.permissions?.canAddCustomers) && (
           <div className={`menu-item ${currentPage === 'add-customer' ? 'active' : ''}`} onClick={() => setCurrentPage('add-customer')}>
