@@ -99,6 +99,7 @@ function App() {
     { currency: 'EUR', rate: 0.93 },
     { currency: 'GBP', rate: 0.79 }
   ])
+  const [editingCurrencyRate, setEditingCurrencyRate] = useState<{ idx: number; value: string } | null>(null)
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
     const savedDarkMode = localStorage.getItem('darkMode')
@@ -284,7 +285,8 @@ function App() {
       allowDeleteTransactions: 'İşlemleri silebilir',
       allowManageEmployees: 'Çalışanları yönetebilir',
       allowExportPdf: 'PDF dışa aktarabilir',
-      settings: 'Ayarlar'
+      settings: 'Ayarlar',
+      saveRate: 'Kaydet'
     },
     en: {
       appTitle: 'Flash',
@@ -417,7 +419,8 @@ function App() {
       senderCurrency: 'Sender Currency',
       receiverCurrency: 'Receiver Currency',
       usd: 'USD',
-      currencyRateDisplay: '1 USD = {rate} {currency}'
+      currencyRateDisplay: '1 USD = {rate} {currency}',
+      saveRate: 'Save'
     },
     ar: {
       appTitle: 'Flash',
@@ -550,7 +553,8 @@ function App() {
       senderCurrency: 'عملة المرسل',
       receiverCurrency: 'عملة المستلم',
       usd: 'دولار أمريكي',
-      currencyRateDisplay: '1 USD = {rate} {currency}'
+      currencyRateDisplay: '1 USD = {rate} {currency}',
+      saveRate: 'حفظ'
     }
   }
 
@@ -2509,25 +2513,39 @@ function App() {
                     <input
                       type="number"
                       step="0.01"
-                      value={rate.rate}
+                      value={editingCurrencyRate?.idx === idx ? editingCurrencyRate.value : rate.rate}
                       onChange={(e) => {
-                        const newRate = parseFloat(e.target.value) || 1
-                        const newRates = [...currencyRates]
-                        const previousRate = newRates[idx].rate
-                        newRates[idx].rate = newRate
-                        setCurrencyRates(newRates)
-                        if (currentUser) {
-                          const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-                          const text = language === 'tr'
-                            ? `${userName} ${newRates[idx].currency} kurunu ${previousRate} → ${newRate} olarak güncelledi.`
-                            : language === 'en'
-                              ? `${userName} updated ${newRates[idx].currency} rate from ${previousRate} to ${newRate}.`
-                              : `${userName} حدّث سعر ${newRates[idx].currency} من ${previousRate} إلى ${newRate}.`
-                          addEmployeeActivity(currentUser.id, text)
-                        }
+                        const value = e.target.value
+                        setEditingCurrencyRate({ idx, value })
                       }}
                       className="currency-rate-input"
                     />
+                    <button
+                      className="save-currency-button"
+                      onClick={() => {
+                        if (editingCurrencyRate && editingCurrencyRate.idx === idx) {
+                          const newRate = parseFloat(editingCurrencyRate.value)
+                          if (!isNaN(newRate) && newRate > 0) {
+                            const newRates = [...currencyRates]
+                            const previousRate = newRates[idx].rate
+                            newRates[idx].rate = newRate
+                            setCurrencyRates(newRates)
+                            setEditingCurrencyRate(null)
+                            if (currentUser) {
+                              const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+                              const text = language === 'tr'
+                                ? `${userName} ${newRates[idx].currency} kurunu ${previousRate} → ${newRate} olarak güncelledi.`
+                                : language === 'en'
+                                  ? `${userName} updated ${newRates[idx].currency} rate from ${previousRate} to ${newRate}.`
+                                  : `${userName} حدّث سعر ${newRates[idx].currency} من ${previousRate} إلى ${newRate}.`
+                              addEmployeeActivity(currentUser.id, text)
+                            }
+                          }
+                        }
+                      }}
+                    >
+                      {t.saveRate}
+                    </button>
                     <span className="currency-rate-label">{t.usd}</span>
                     <button
                       className="delete-currency-button"

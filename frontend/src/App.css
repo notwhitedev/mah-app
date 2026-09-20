@@ -2041,11 +2041,11 @@ body.dark-mode .right-sidebar.collapsed {
 .currency-rate-item {
   display: flex;
   align-items: center;
-  gap: 15px;
-  background-color: #f8f9fa;
+  gap: 12px;
+  background-color: #f8fafc;
   padding: 15px 20px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 .dark-mode .currency-rate-item {
@@ -2068,9 +2068,9 @@ body.dark-mode .right-sidebar.collapsed {
   flex: 1;
   padding: 10px 14px;
   background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  color: #333333;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #1f2937;
   font-size: 16px;
   transition: border-color 0.3s, background-color 0.3s;
 }
@@ -2090,6 +2090,23 @@ body.dark-mode .right-sidebar.collapsed {
   border-color: #0ea5e9;
 }
 
+.save-currency-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.save-currency-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
 .currency-rate-label {
   font-size: 14px;
   color: #666666;
@@ -2098,6 +2115,10 @@ body.dark-mode .right-sidebar.collapsed {
 
 .dark-mode .currency-rate-label {
   color: #aaaaaa;
+}
+
+.dark-mode .save-currency-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
 .delete-currency-button {
