@@ -1521,11 +1521,10 @@ function App() {
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المعرف' : t.transactionId}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'التاريخ' : t.date}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المرسل' : t.sender}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المبلغ' : t.amount}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'عملة المرسل' : t.senderCurrency}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المرسل إليه' : t.receiver}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المبلغ المستلم' : t.deliveryAmount}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'عملة المستقبل' : t.receiverCurrency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'الربح / الخسارة' : t.profitLoss}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'ملاحظة' : t.note}</th>
                   ${customColumnHeaders}
                 </tr>
@@ -1542,11 +1541,10 @@ function App() {
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; font-weight: 700;">${transaction.id || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.date || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.sender || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.amount || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.senderCurrency || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiver || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.deliveryAmount || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiverCurrency || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.profitLoss !== 0 ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.note || '-'}</td>
                       ${customColumnCells(transaction)}
                     </tr>
@@ -2258,41 +2256,6 @@ function App() {
                   <p className="stat-value">{totalCustomers > 0 ? totalCustomers : '-'}</p>
                 </div>
               </div>
-              <div className="stat-card transaction-management-card" onClick={() => {
-                if (selectedCustomer) {
-                  setSelectedTransactionForModal({
-                    id: '',
-                    customerId: selectedCustomer.id,
-                    customerName: selectedCustomer.name,
-                    currency: 'USD',
-                    senderCurrency: 'USD',
-                    receiverCurrency: 'USD',
-                    senderRate: 1,
-                    receiverRate: 1,
-                    date: new Date().toISOString().split('T')[0],
-                    sender: '',
-                    amount: '',
-                    receiver: '',
-                    deliveryAmount: '',
-                    profitLoss: 0,
-                    description: '',
-                    status: 'pending',
-                    note: ''
-                  })
-                  setShowTransactionModal(true)
-                }
-              }}>
-                <div className="stat-icon">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                </div>
-                <div className="stat-info">
-                  <p className="stat-label">{t.transactionManagement}</p>
-                  <p className="stat-value">+</p>
-                </div>
-              </div>
               <div className="stat-card">
                 <div className="stat-icon">
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -2605,7 +2568,7 @@ function App() {
                     <button
                       className="delete-currency-button"
                       onClick={() => {
-                        if (currencyRates.length > 1) {
+                        if (currencyRates.length > 1 && (language === 'tr' || language === 'en')) {
                           const deletedCurrency = currencyRates[idx].currency
                           const newRates = currencyRates.filter((_, i) => i !== idx)
                           setCurrencyRates(newRates)
@@ -2743,29 +2706,29 @@ function App() {
                           <th data-column="date">
                             {t.date}
                           </th>
+                          <th data-column="sender">
+                            {t.sender}
+                          </th>
                           <th data-column="senderCurrency">
                             {t.senderCurrency}
+                          </th>
+                          <th data-column="receiver">
+                            {t.receiver}
                           </th>
                           <th data-column="receiverCurrency">
                             {t.receiverCurrency}
                           </th>
-                          <th data-column="sender">
-                            {t.sender}
-                          </th>
-                          <th data-column="note">
-                            {t.note}
-                          </th>
                           <th data-column="amount">
                             {t.amount}
-                          </th>
-                          <th data-column="receiver">
-                            {t.receiver}
                           </th>
                           <th data-column="deliveryAmount">
                             {t.deliveryAmount}
                           </th>
                           <th data-column="profitLoss">
                             {t.profitLoss}
+                          </th>
+                          <th data-column="note">
+                            {t.note}
                           </th>
                           {customColumns.map(column => (
                             <th key={column.id} data-column={column.id}>
@@ -2781,40 +2744,10 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {transactions.map((transaction) => (
+                        {transactions.filter(t => !selectedCustomer || t.sender === selectedCustomer.name).map((transaction) => (
                           <tr key={transaction.id} className={editingTransaction === transaction.id ? 'editing-row' : ''} onContextMenu={(e) => handleContextMenu(e, 'transaction', transaction.id)}>
                             <td className="readonly-cell">{transaction.id}</td>
                             <td className="readonly-cell">{transaction.date}</td>
-                            <td>
-                              {editingTransaction === transaction.id ? (
-                                <select
-                                  value={transaction.senderCurrency}
-                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'senderCurrency', e.target.value)}
-                                  className="table-select"
-                                >
-                                  {currencyRates.map((curr, idx) => (
-                                    <option key={idx} value={curr.currency}>{curr.currency}</option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <span className="cell-value">{transaction.senderCurrency}</span>
-                              )}
-                            </td>
-                            <td>
-                              {editingTransaction === transaction.id ? (
-                                <select
-                                  value={transaction.receiverCurrency}
-                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'receiverCurrency', e.target.value)}
-                                  className="table-select"
-                                >
-                                  {currencyRates.map((curr, idx) => (
-                                    <option key={idx} value={curr.currency}>{curr.currency}</option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <span className="cell-value">{transaction.receiverCurrency}</span>
-                              )}
-                            </td>
                             <td>
                               {editingTransaction === transaction.id ? (
                                 <select
@@ -2833,15 +2766,17 @@ function App() {
                             </td>
                             <td>
                               {editingTransaction === transaction.id ? (
-                                <input
-                                  type="text"
-                                  value={transaction.amount}
-                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'amount', e.target.value)}
-                                  className="table-input"
-                                  placeholder={t.amount}
-                                />
+                                <select
+                                  value={transaction.senderCurrency}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'senderCurrency', e.target.value)}
+                                  className="table-select"
+                                >
+                                  {currencyRates.map((curr, idx) => (
+                                    <option key={idx} value={curr.currency}>{curr.currency}</option>
+                                  ))}
+                                </select>
                               ) : (
-                                <span className="cell-value">{transaction.amount || '-'}</span>
+                                <span className="cell-value">{transaction.senderCurrency}</span>
                               )}
                             </td>
                             <td>
@@ -2862,6 +2797,34 @@ function App() {
                             </td>
                             <td>
                               {editingTransaction === transaction.id ? (
+                                <select
+                                  value={transaction.receiverCurrency}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'receiverCurrency', e.target.value)}
+                                  className="table-select"
+                                >
+                                  {currencyRates.map((curr, idx) => (
+                                    <option key={idx} value={curr.currency}>{curr.currency}</option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <span className="cell-value">{transaction.receiverCurrency}</span>
+                              )}
+                            </td>
+                            <td>
+                              {editingTransaction === transaction.id ? (
+                                <input
+                                  type="text"
+                                  value={transaction.amount}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'amount', e.target.value)}
+                                  className="table-input"
+                                  placeholder={t.amount}
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.amount || '-'}</span>
+                              )}
+                            </td>
+                            <td>
+                              {editingTransaction === transaction.id ? (
                                 <input
                                   type="text"
                                   value={transaction.deliveryAmount}
@@ -2871,6 +2834,22 @@ function App() {
                                 />
                               ) : (
                                 <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
+                              )}
+                            </td>
+                            <td className={`profit-loss-cell ${transaction.profitLoss > 0 ? 'profit' : transaction.profitLoss < 0 ? 'loss' : ''}`}>
+                              {transaction.profitLoss !== 0 ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                            </td>
+                            <td>
+                              {editingTransaction === transaction.id ? (
+                                <input
+                                  type="text"
+                                  value={transaction.note || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'note', e.target.value)}
+                                  className="table-input"
+                                  placeholder={t.note}
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.note || '-'}</span>
                               )}
                             </td>
                             <td className={`profit-loss-cell ${transaction.profitLoss > 0 ? 'profit' : transaction.profitLoss < 0 ? 'loss' : ''}`}>
@@ -3408,6 +3387,36 @@ function App() {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
             <span>{t.addCustomer}</span>
+          </div>
+        )}
+        {selectedCustomer && (
+          <div className="menu-item" onClick={() => {
+            setSelectedTransactionForModal({
+              id: '',
+              customerId: selectedCustomer.id,
+              customerName: selectedCustomer.name,
+              currency: 'USD',
+              senderCurrency: 'USD',
+              receiverCurrency: 'USD',
+              senderRate: 1,
+              receiverRate: 1,
+              date: new Date().toISOString().split('T')[0],
+              sender: '',
+              amount: '',
+              receiver: '',
+              deliveryAmount: '',
+              profitLoss: 0,
+              description: '',
+              status: 'pending',
+              note: ''
+            })
+            setShowTransactionModal(true)
+          }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>+</span>
           </div>
         )}
         <div className={`menu-item ${currentPage === 'view-customers' || currentPage === 'transactions' ? 'active' : ''}`} onClick={() => setCurrentPage('view-customers')}>
