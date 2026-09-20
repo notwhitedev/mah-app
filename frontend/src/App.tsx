@@ -1444,7 +1444,7 @@ function App() {
     const element = document.createElement('div')
     element.innerHTML = `
       <div style="font-family: ${language === 'ar' ? "Tahoma, Arial, sans-serif" : "Arial, sans-serif"}; font-weight: 700; width: 100%; min-height: 100%; background: #ececec; padding: 20px; box-sizing: border-box; direction: ${language === 'ar' ? 'rtl' : 'ltr'}; color: #1f2937;">
-        <div style="background: linear-gradient(90deg, #4e5bdd 0%, #6d54d7 48%, #7e4cc7 100%); border-radius: 14px 14px 0 0; padding: 16px 18px; color: #ffffff; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 10px rgba(79,70,229,0.14);">
+        <div style="background: linear-gradient(90deg, #f59e0b 0%, #d97706 48%, #b45309 100%); border-radius: 14px 14px 0 0; padding: 16px 18px; color: #ffffff; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 10px rgba(245,158,11,0.14);">
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
             <div style="display: flex; flex-direction: column; align-items: ${language === 'ar' ? 'flex-end' : 'flex-start'}; min-width: 180px;">
               <span style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 2px;">${labels.date}</span>
