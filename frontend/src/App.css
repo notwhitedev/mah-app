@@ -635,6 +635,28 @@ body.dark-mode .right-sidebar.collapsed {
   color: #ef4444;
 }
 
+.modal-input.profit-text {
+  color: #16a34a !important;
+  font-weight: 700;
+  background-color: #f0fdf4 !important;
+}
+
+.modal-input.loss-text {
+  color: #dc2626 !important;
+  font-weight: 700;
+  background-color: #fef2f2 !important;
+}
+
+.dark-mode .modal-input.profit-text {
+  color: #22c55e !important;
+  background-color: #14532d !important;
+}
+
+.dark-mode .modal-input.loss-text {
+  color: #ef4444 !important;
+  background-color: #450a0a !important;
+}
+
 /* Activity Lines */
 .activity-lines {
   margin-top: 30px;
@@ -1784,6 +1806,10 @@ body.dark-mode .right-sidebar.collapsed {
   display: none;
 }
 
+.excel-table tbody tr .readonly-cell .cell-value {
+  display: block !important;
+}
+
 .excel-table tbody tr:hover {
   background-color: #f1f5f9;
 }
@@ -2619,10 +2645,10 @@ body.dark-mode .right-sidebar.collapsed {
 
 .right-sidebar .menu-item,
 .app.rtl .right-sidebar .menu-item {
-  flex: 0 1 132px;
-  min-width: 84px;
+  flex: 0 1 140px;
+  min-width: 100px;
   height: 70px;
-  margin: 0;
+  margin: 0 4px;
   padding: 9px 8px;
   justify-content: center;
   gap: 5px;
