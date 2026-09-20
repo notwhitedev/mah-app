@@ -1844,11 +1844,21 @@ body.dark-mode .right-sidebar.collapsed {
   background: #ffffff;
   z-index: 10;
   border-left: 2px solid #e0e0e0;
+  min-width: 80px;
 }
 
 .dark-mode .excel-table tbody tr .action-buttons-cell {
   background: #3a3a3a;
   border-left-color: #4a4a4a;
+}
+
+.excel-table {
+  position: relative;
+}
+
+.excel-table-container {
+  position: relative;
+  overflow-x: auto;
 }
 
 .table-select:focus {
@@ -1896,6 +1906,7 @@ body.dark-mode .right-sidebar.collapsed {
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .table-action-button.edit-button {
@@ -2596,9 +2607,10 @@ body.dark-mode .right-sidebar.collapsed {
 .right-sidebar .menu-item:nth-child(3),
 .app.rtl .right-sidebar .menu-item:nth-child(3) {
   order: 2;
-  flex: 0 1 140px !important;
-  min-width: 110px !important;
-  height: 75px !important;
+  flex: 0 1 150px !important;
+  min-width: 120px !important;
+  height: 80px !important;
+  margin: 0 auto !important;
 }
 
 .right-sidebar.collapsed .menu-item,

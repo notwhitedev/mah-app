@@ -1517,34 +1517,30 @@ function App() {
             <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
               <thead>
                 <tr style="background: linear-gradient(90deg, #4c57d8 0%, #5d4bbf 100%); color: #ffffff; text-align: center;">
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'الحالة' : t.status}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المعرف' : t.transactionId}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'التاريخ' : t.date}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المرسل' : t.sender}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'عملة المرسل' : t.senderCurrency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المبلغ المرسل' : t.amount}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المرسل إليه' : t.receiver}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'عملة المستقبل' : t.receiverCurrency}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'الربح / الخسارة' : t.profitLoss}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المبلغ المستلم' : t.deliveryAmount}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'ملاحظة' : t.note}</th>
                   ${customColumnHeaders}
                 </tr>
               </thead>
               <tbody>
                 ${transactionsToExport.map((transaction, index) => {
-                  const rawStatus = transaction.status || 'pending'
-                  const statusText = getStatusLabel(rawStatus)
                   return `
                     <tr style="background: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; font-weight: 700;">
-                        <span style="display: inline-block; padding: 2px 8px; border-radius: 5px; background: ${rawStatus === 'pending' ? '#fef3c7' : rawStatus === 'completed' ? '#dcfce7' : '#fee2e2'}; color: ${rawStatus === 'pending' ? '#92400e' : rawStatus === 'completed' ? '#166534' : '#991b1b'};">${statusText}</span>
-                      </td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; font-weight: 700;">${transaction.id || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.date || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.sender || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.senderCurrency || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.amount || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiver || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiverCurrency || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.profitLoss !== 0 ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.deliveryAmount || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.note || '-'}</td>
                       ${customColumnCells(transaction)}
                     </tr>
@@ -2757,17 +2753,20 @@ function App() {
                           <th data-column="senderCurrency">
                             {t.senderCurrency}
                           </th>
+                          <th data-column="amount">
+                            {t.amount}
+                          </th>
                           <th data-column="receiver">
                             {t.receiver}
                           </th>
                           <th data-column="receiverCurrency">
                             {t.receiverCurrency}
                           </th>
-                          <th data-column="amount">
-                            {t.amount}
-                          </th>
                           <th data-column="deliveryAmount">
                             {t.deliveryAmount}
+                          </th>
+                          <th data-column="profitLoss">
+                            {t.profitLoss}
                           </th>
                           <th data-column="note">
                             {t.note}
@@ -2834,6 +2833,18 @@ function App() {
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
+                                <input
+                                  type="text"
+                                  value={transaction.amount || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'amount', e.target.value)}
+                                  className="table-input"
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.amount || '-'}</span>
+                              )}
+                            </td>
+                            <td>
+                              {editingRowId === transaction.id ? (
                                 <select
                                   value={transaction.receiver || ''}
                                   onChange={(e) => handleUpdateTransaction(transaction.id, 'receiver', e.target.value)}
@@ -2867,18 +2878,6 @@ function App() {
                               {editingRowId === transaction.id ? (
                                 <input
                                   type="text"
-                                  value={transaction.amount || ''}
-                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'amount', e.target.value)}
-                                  className="table-input"
-                                />
-                              ) : (
-                                <span className="cell-value">{transaction.amount || '-'}</span>
-                              )}
-                            </td>
-                            <td>
-                              {editingRowId === transaction.id ? (
-                                <input
-                                  type="text"
                                   value={transaction.deliveryAmount || ''}
                                   onChange={(e) => handleUpdateTransaction(transaction.id, 'deliveryAmount', e.target.value)}
                                   className="table-input"
@@ -2886,6 +2885,9 @@ function App() {
                               ) : (
                                 <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
                               )}
+                            </td>
+                            <td>
+                              <span className="cell-value">{transaction.profitLoss ? transaction.profitLoss.toFixed(1) : '0'}</span>
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
@@ -2988,15 +2990,6 @@ function App() {
             <h3>{t.transactionManagement}</h3>
             <div className="modal-form">
               <div className="form-group">
-                <label>{t.transactionId}</label>
-                <input
-                  type="text"
-                  value={selectedTransactionForModal?.id || ''}
-                  className="modal-input"
-                  disabled
-                />
-              </div>
-              <div className="form-group">
                 <label>{t.date}</label>
                 <input
                   type="text"
@@ -3046,6 +3039,20 @@ function App() {
                 </select>
               </div>
               <div className="form-group">
+                <label>{t.amount}</label>
+                <input
+                  type="text"
+                  value={selectedTransactionForModal?.amount || ''}
+                  onChange={(e) => {
+                    if (selectedTransactionForModal) {
+                      const updated = { ...selectedTransactionForModal, amount: e.target.value }
+                      setSelectedTransactionForModal(updated)
+                    }
+                  }}
+                  className="modal-input"
+                />
+              </div>
+              <div className="form-group">
                 <label>{t.receiver}</label>
                 <select
                   value={selectedTransactionForModal?.receiver || ''}
@@ -3081,20 +3088,6 @@ function App() {
                 </select>
               </div>
               <div className="form-group">
-                <label>{t.amount}</label>
-                <input
-                  type="text"
-                  value={selectedTransactionForModal?.amount || ''}
-                  onChange={(e) => {
-                    if (selectedTransactionForModal) {
-                      const updated = { ...selectedTransactionForModal, amount: e.target.value }
-                      setSelectedTransactionForModal(updated)
-                    }
-                  }}
-                  className="modal-input"
-                />
-              </div>
-              <div className="form-group">
                 <label>{t.deliveryAmount}</label>
                 <input
                   type="text"
@@ -3123,21 +3116,13 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label>{t.status}</label>
-                <select
-                  value={selectedTransactionForModal?.status || 'pending'}
-                  onChange={(e) => {
-                    if (selectedTransactionForModal) {
-                      const updated = { ...selectedTransactionForModal, status: e.target.value as 'pending' | 'completed' | 'cancelled' }
-                      setSelectedTransactionForModal(updated)
-                    }
-                  }}
-                  className="modal-select"
-                >
-                  <option value="pending">{t.pending}</option>
-                  <option value="completed">{t.completed}</option>
-                  <option value="cancelled">{t.cancelled}</option>
-                </select>
+                <label>{t.profitLoss}</label>
+                <input
+                  type="text"
+                  value={selectedTransactionForModal?.profitLoss?.toFixed(1) || '0'}
+                  className="modal-input"
+                  disabled
+                />
               </div>
               <div className="modal-actions">
                 <button className="modal-button cancel" onClick={() => setShowTransactionModal(false)}>
