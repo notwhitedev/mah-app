@@ -1966,6 +1966,11 @@ body.dark-mode .right-sidebar.collapsed {
   flex-shrink: 0;
 }
 
+.table-action-button svg {
+  color: #ffffff;
+  stroke: #ffffff;
+}
+
 .table-action-button.edit-button {
   background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
   color: #ffffff;
