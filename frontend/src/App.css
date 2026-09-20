@@ -1825,6 +1825,23 @@ body.dark-mode .right-sidebar.collapsed {
   font-size: 13px;
 }
 
+.excel-table tbody tr {
+  position: relative;
+}
+
+.excel-table tbody tr .action-buttons-cell {
+  position: sticky;
+  right: 0;
+  background: #ffffff;
+  z-index: 10;
+  border-left: 2px solid #e0e0e0;
+}
+
+.dark-mode .excel-table tbody tr .action-buttons-cell {
+  background: #3a3a3a;
+  border-left-color: #4a4a4a;
+}
+
 .table-select:focus {
   outline: none;
   border-color: #0ea5e9;
@@ -2565,6 +2582,15 @@ body.dark-mode .right-sidebar.collapsed {
   border-radius: 13px;
   opacity: 1;
   pointer-events: auto;
+}
+
+.right-sidebar .menu-item:nth-child(3),
+.app.rtl .right-sidebar .menu-item:nth-child(3) {
+  order: 3;
+  flex: 0 1 140px !important;
+  min-width: 110px !important;
+  height: 75px !important;
+}
 }
 
 .right-sidebar.collapsed .menu-item,
