@@ -329,7 +329,7 @@ body.dark-mode .right-sidebar.collapsed {
   -webkit-backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 26px;
   padding: 20px 0;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.04) !important;
   border-left: 1px solid rgba(0, 0, 0, 0.06) !important;
