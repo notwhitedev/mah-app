@@ -2631,7 +2631,7 @@ function App() {
                     <button
                       className="delete-currency-button"
                       onClick={() => {
-                        if (currencyRates.length > 1 && (language === 'tr' || language === 'en')) {
+                        if (currencyRates.length > 1) {
                           const deletedCurrency = currencyRates[idx].currency
                           const newRates = currencyRates.filter((_, i) => i !== idx)
                           setCurrencyRates(newRates)
