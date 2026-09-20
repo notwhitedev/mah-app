@@ -125,7 +125,6 @@ function App() {
   const [allUsers, setAllUsers] = useState<UserAccount[]>([])
   const [employeeActivities, setEmployeeActivities] = useState<Record<string, EmployeeActivityLog[]>>({})
   const [settingsLoaded, setSettingsLoaded] = useState(false)
-  const transactionSaveTimers = useRef<Record<string, number>>({})
   const [loginForm, setLoginForm] = useState({ username: '', password: '' })
   const [developerForm, setDeveloperForm] = useState({ username: '', password: '', country: '', name: '' })
   const toastTimer = useRef<number | null>(null)
