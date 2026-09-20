@@ -1779,11 +1779,17 @@ body.dark-mode .right-sidebar.collapsed {
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  padding: 10px 14px;
+  padding: 8px 10px;
   color: #333333;
-  font-size: 15px;
+  font-size: 14px;
   width: 100%;
-  min-width: 100px;
+  min-width: 80px;
+}
+
+.excel-table .table-input {
+  min-width: 60px;
+  padding: 6px 8px;
+  font-size: 13px;
 }
 
 .table-input:focus {
@@ -1805,12 +1811,18 @@ body.dark-mode .right-sidebar.collapsed {
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  padding: 10px 14px;
+  padding: 8px 10px;
   color: #333333;
-  font-size: 15px;
+  font-size: 14px;
   width: 100%;
   cursor: pointer;
-  min-width: 100px;
+  min-width: 80px;
+}
+
+.excel-table .table-select {
+  min-width: 60px;
+  padding: 6px 8px;
+  font-size: 13px;
 }
 
 .table-select:focus {

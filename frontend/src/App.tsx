@@ -125,6 +125,7 @@ function App() {
   const [allUsers, setAllUsers] = useState<UserAccount[]>([])
   const [employeeActivities, setEmployeeActivities] = useState<Record<string, EmployeeActivityLog[]>>({})
   const [settingsLoaded, setSettingsLoaded] = useState(false)
+  const transactionSaveTimers = useRef<Record<string, number>>({})
   const [loginForm, setLoginForm] = useState({ username: '', password: '' })
   const [developerForm, setDeveloperForm] = useState({ username: '', password: '', country: '', name: '' })
   const toastTimer = useRef<number | null>(null)
@@ -1722,6 +1723,94 @@ function App() {
 
 
 
+  const handleUpdateTransaction = async (transactionId: string, field: string, value: any) => {
+    if (!can('canEditTransactions')) {
+      return
+    }
+
+    const updatedTransactions = transactions.map(t => {
+      if (t.id === transactionId) {
+        const updated = { ...t, [field]: value }
+
+        // Otomatik kazanç/zarar hesapla (formül: (amount / senderRate) - (deliveryAmount / receiverRate))
+        if (field === 'amount' || field === 'deliveryAmount') {
+          const amount = field === 'amount' ? parseFloat(String(value)) || 0 : parseFloat(String(t.amount)) || 0
+          const deliveryAmount = field === 'deliveryAmount' ? parseFloat(String(value)) || 0 : parseFloat(String(t.deliveryAmount)) || 0
+
+          // Gönderen ve alıcı kurları (X currency = 1 USD)
+          const senderRate = t.senderRate || 1
+          const receiverRate = t.receiverRate || 1
+
+          // Her iki tarafı USD'ye çevir, sonra farkı al
+          // Gönderen: amount / senderRate
+          // Alıcı: deliveryAmount / receiverRate
+          // Kazanç = Gönderen USD - Alıcı USD
+          updated.profitLoss = (amount / senderRate) - (deliveryAmount / receiverRate)
+        } else if (field === 'senderCurrency') {
+          // Para birimi değişince GÜNCEL kuru kullan
+          const senderRate = currencyRates.find(r => r.currency === value)?.rate || 1
+          updated.senderRate = senderRate
+          updated.senderCurrency = value
+          // Kazancı yeni kura göre yeniden hesapla
+          const amount = parseFloat(String(t.amount)) || 0
+          const deliveryAmount = parseFloat(String(t.deliveryAmount)) || 0
+          const receiverRate = t.receiverRate || 1
+          updated.profitLoss = (amount / senderRate) - (deliveryAmount / receiverRate)
+        } else if (field === 'receiverCurrency') {
+          // Para birimi değişince GÜNCEL kuru kullan
+          const receiverRate = currencyRates.find(r => r.currency === value)?.rate || 1
+          updated.receiverRate = receiverRate
+          updated.receiverCurrency = value
+          // Kazancı yeni kura göre yeniden hesapla
+          const amount = parseFloat(String(t.amount)) || 0
+          const deliveryAmount = parseFloat(String(t.deliveryAmount)) || 0
+          const senderRate = t.senderRate || 1
+          updated.profitLoss = (amount / senderRate) - (deliveryAmount / receiverRate)
+        }
+
+        return updated
+      }
+      return t
+    })
+
+    setTransactions(updatedTransactions)
+
+    // İşlemi müşteriye kaydet
+    if (selectedCustomer) {
+      const updatedCustomer = {
+        ...selectedCustomer,
+        transactions: updatedTransactions
+      }
+      const finalCustomer = updateCustomerStats(updatedCustomer)
+      setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
+      setSelectedCustomer(finalCustomer)
+      const existingTimer = transactionSaveTimers.current[transactionId]
+      if (existingTimer) window.clearTimeout(existingTimer)
+      transactionSaveTimers.current[transactionId] = window.setTimeout(async () => {
+        try {
+          const response = await fetch(`${API_URL}/api/customers/${selectedCustomer.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalCustomer)
+          })
+          if (!response.ok) throw new Error('Transaction update failed')
+        } catch {
+          setErrorMessage(language === 'tr' ? 'Satır buluta kaydedilemedi.' : language === 'en' ? 'Row could not be saved to the cloud.' : 'تعذر حفظ السطر في السحابة.')
+        }
+      }, 350)
+      
+      if (currentUser) {
+        const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+        const text = language === 'tr'
+          ? `${userName} "${selectedCustomer.name}" müşterisinin hesabını düzenledi.`
+          : language === 'en'
+            ? `${userName} updated customer "${selectedCustomer.name}" account.`
+            : `${userName} عدّل حساب العميل "${selectedCustomer.name}".`
+        addEmployeeActivity(currentUser.id, text)
+      }
+    }
+  }
+
   const handleSaveTransactionFromModal = async () => {
     if (!selectedTransactionForModal) return
 
@@ -2723,41 +2812,104 @@ function App() {
                         {transactions.filter(t => !selectedCustomer || t.sender === selectedCustomer.name).map((transaction) => (
                           <tr key={transaction.id}>
                             <td className="readonly-cell">{transaction.id}</td>
-                            <td className="readonly-cell">{transaction.date}</td>
                             <td>
-                              <span className="cell-value">{transaction.sender || '-'}</span>
+                              <input
+                                type="text"
+                                value={transaction.date}
+                                onChange={(e) => handleUpdateTransaction(transaction.id, 'date', e.target.value)}
+                                className="table-input"
+                              />
                             </td>
                             <td>
-                              <span className="cell-value">{transaction.senderCurrency}</span>
+                              <select
+                                value={transaction.sender || ''}
+                                onChange={(e) => handleUpdateTransaction(transaction.id, 'sender', e.target.value)}
+                                className="table-select"
+                              >
+                                <option value="">{t.selectCustomer}</option>
+                                {customers.map((customer) => (
+                                  <option key={customer.id} value={customer.name}>{customer.name}</option>
+                                ))}
+                              </select>
                             </td>
                             <td>
-                              <span className="cell-value">{transaction.receiver || '-'}</span>
+                              <select
+                                value={transaction.senderCurrency}
+                                onChange={(e) => handleUpdateTransaction(transaction.id, 'senderCurrency', e.target.value)}
+                                className="table-select"
+                              >
+                                {currencyRates.map((curr, idx) => (
+                                  <option key={idx} value={curr.currency}>{curr.currency}</option>
+                                ))}
+                              </select>
                             </td>
                             <td>
-                              <span className="cell-value">{transaction.receiverCurrency}</span>
+                              <select
+                                value={transaction.receiver || ''}
+                                onChange={(e) => handleUpdateTransaction(transaction.id, 'receiver', e.target.value)}
+                                className="table-select"
+                              >
+                                <option value="">{t.selectCustomer}</option>
+                                {customers.map((customer) => (
+                                  <option key={customer.id} value={customer.name}>{customer.name}</option>
+                                ))}
+                              </select>
                             </td>
                             <td>
-                              <span className="cell-value">{transaction.amount || '-'}</span>
+                              <select
+                                value={transaction.receiverCurrency}
+                                onChange={(e) => handleUpdateTransaction(transaction.id, 'receiverCurrency', e.target.value)}
+                                className="table-select"
+                              >
+                                {currencyRates.map((curr, idx) => (
+                                  <option key={idx} value={curr.currency}>{curr.currency}</option>
+                                ))}
+                              </select>
                             </td>
                             <td>
-                              <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
+                              <input
+                                type="text"
+                                value={transaction.amount || ''}
+                                onChange={(e) => handleUpdateTransaction(transaction.id, 'amount', e.target.value)}
+                                className="table-input"
+                              />
                             </td>
                             <td>
-                              <span className="cell-value">{transaction.note || '-'}</span>
+                              <input
+                                type="text"
+                                value={transaction.deliveryAmount || ''}
+                                onChange={(e) => handleUpdateTransaction(transaction.id, 'deliveryAmount', e.target.value)}
+                                className="table-input"
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                value={transaction.note || ''}
+                                onChange={(e) => handleUpdateTransaction(transaction.id, 'note', e.target.value)}
+                                className="table-input"
+                              />
                             </td>
                             {customColumns.map(column => (
                               <td key={column.id}>
-                                <span className="cell-value">
-                                  {column.type === 'number' ? transaction[column.id] || 0 : transaction[column.id] || '-'}
-                                </span>
+                                <input
+                                  type={column.type === 'number' ? 'number' : 'text'}
+                                  value={transaction[column.id] || (column.type === 'number' ? 0 : '')}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, column.id, column.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
+                                  className="table-input"
+                                />
                               </td>
                             ))}
                             <td>
-                              <span className="cell-value">
-                                {transaction.status === 'pending' ? t.pending :
-                                   transaction.status === 'completed' ? t.completed :
-                                   transaction.status === 'cancelled' ? t.cancelled : transaction.status}
-                              </span>
+                              <select
+                                value={transaction.status}
+                                onChange={(e) => handleUpdateTransaction(transaction.id, 'status', e.target.value)}
+                                className="table-select"
+                              >
+                                <option value="pending">{t.pending}</option>
+                                <option value="completed">{t.completed}</option>
+                                <option value="cancelled">{t.cancelled}</option>
+                              </select>
                             </td>
                             <td className="action-buttons-cell">
                               <button
@@ -3276,7 +3428,7 @@ function App() {
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
-          <span>+</span>
+          <span>{language === 'tr' ? 'İşlemler' : language === 'en' ? 'Transactions' : 'المعاملات'}</span>
         </div>
         {currentUser && (currentUser.role === 'owner' || currentUser.role === 'developer' || currentUser.permissions?.canAddCustomers) && (
           <div className={`menu-item ${currentPage === 'add-customer' ? 'active' : ''}`} onClick={() => setCurrentPage('add-customer')}>
