@@ -1672,7 +1672,6 @@ function App() {
 
     const defaultCurrency = currencyRates[0]
     const currentRate = defaultCurrency.rate || 1
-    const now = new Date()
     const newTransaction: Transaction = {
       id: generateTransactionId(),
       customerId: selectedCustomer?.id,
@@ -1682,7 +1681,13 @@ function App() {
       receiverCurrency: defaultCurrency.currency,
       senderRate: currentRate,
       receiverRate: currentRate,
-      date: now.toLocaleString('tr-TR'),
+      date: (() => {
+        const dateNow = new Date()
+        const year = dateNow.getFullYear()
+        const month = String(dateNow.getMonth() + 1).padStart(2, '0')
+        const day = String(dateNow.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+      })(),
       sender: selectedCustomer?.name || '',
       amount: '',
       receiver: '',
@@ -1840,10 +1845,10 @@ function App() {
       ...selectedTransactionForModal,
       id: selectedTransactionForModal.id || generateTransactionId(),
       date: selectedTransactionForModal.date || (() => {
-        const now = new Date()
-        const year = now.getFullYear()
-        const month = String(now.getMonth() + 1).padStart(2, '0')
-        const day = String(now.getDate()).padStart(2, '0')
+        const dateNow = new Date()
+        const year = dateNow.getFullYear()
+        const month = String(dateNow.getMonth() + 1).padStart(2, '0')
+        const day = String(dateNow.getDate()).padStart(2, '0')
         return `${year}-${month}-${day}`
       })(),
       status: (selectedTransactionForModal.status || 'pending') as 'pending' | 'completed' | 'cancelled',
@@ -2096,8 +2101,9 @@ function App() {
     const todayTransactions: Transaction[] = []
 
     customers.forEach(customer => {
-      (customer.transactions || []).forEach(t => {
-        if (t.date === today && t.status !== 'cancelled') {
+      (customer.transactions || []).forEach((t: Transaction) => {
+        // Tarih kontrolünü daha esnek yap - cancelled olsa bile göster
+        if (t.date === today) {
           todayTransactions.push({
             ...t,
             customerName: customer.name
@@ -3555,10 +3561,10 @@ function App() {
             senderRate: 1,
             receiverRate: 1,
             date: (() => {
-              const now = new Date()
-              const year = now.getFullYear()
-              const month = String(now.getMonth() + 1).padStart(2, '0')
-              const day = String(now.getDate()).padStart(2, '0')
+              const dateNow = new Date()
+              const year = dateNow.getFullYear()
+              const month = String(dateNow.getMonth() + 1).padStart(2, '0')
+              const day = String(dateNow.getDate()).padStart(2, '0')
               return `${year}-${month}-${day}`
             })(),
             sender: '',
