@@ -294,7 +294,9 @@ function App() {
       selectCustomer: 'Müşteri Seç',
       addNote: 'Not Ekle',
       note: 'Not',
-      transactionManagement: 'İşlem Yönetimi'
+      transactionManagement: 'İşlem Yönetimi',
+      todayTransactions: 'Bugün Eklenen Satırlar',
+      noTodayTransactions: 'Bugün henüz satır eklenmedi'
     },
     en: {
       appTitle: 'Flash',
@@ -433,7 +435,9 @@ function App() {
       selectCustomer: 'Select Customer',
       addNote: 'Add Note',
       note: 'Note',
-      transactionManagement: 'Transaction Management'
+      transactionManagement: 'Transaction Management',
+      todayTransactions: 'Today Added Rows',
+      noTodayTransactions: 'No rows added today'
     },
     ar: {
       appTitle: 'Flash',
@@ -572,7 +576,9 @@ function App() {
       selectCustomer: 'اختر العميل',
       addNote: 'إضافة ملاحظة',
       note: 'ملاحظة',
-      transactionManagement: 'إدارة المعاملات'
+      transactionManagement: 'إدارة المعاملات',
+      todayTransactions: 'الصفوف المضافة اليوم',
+      noTodayTransactions: 'لم يتم إضافة صفوف اليوم'
     }
   }
 
@@ -2073,6 +2079,27 @@ function App() {
 
   const stats = calculateTotalStats()
 
+  // Günlük eklenen satırları hesapla
+  const getTodayTransactions = () => {
+    const today = new Date().toISOString().split('T')[0]
+    const todayTransactions: Transaction[] = []
+
+    customers.forEach(customer => {
+      (customer.transactions || []).forEach(t => {
+        if (t.date === today && t.status !== 'cancelled') {
+          todayTransactions.push({
+            ...t,
+            customerName: customer.name
+          })
+        }
+      })
+    })
+
+    return todayTransactions
+  }
+
+  const todayTransactions = getTodayTransactions()
+
   return (
     <div className={`app ${darkMode ? 'dark-mode' : 'light-mode'} ${language === 'ar' ? 'rtl' : ''}`} onClick={closeContextMenu} dir={language === 'ar' ? 'rtl' : 'ltr'}>
       {toast && (
@@ -2356,6 +2383,45 @@ function App() {
                 <div className="line-value">{totalCustomers}</div>
               </div>
             </div>
+
+            {/* Günlük Eklenen Satırlar */}
+            {todayTransactions.length > 0 && (
+              <div className="today-transactions-container">
+                <h3>{t.todayTransactions}</h3>
+                <div className="table-container">
+                  <table className="excel-table">
+                    <thead>
+                      <tr>
+                        <th data-column="date">{t.date || 'Tarih'}</th>
+                        <th data-column="customer">{t.customer || 'Müşteri'}</th>
+                        <th data-column="amount">{t.amount || 'Tutar'}</th>
+                        <th data-column="profitLoss">{t.profitLoss || 'Kazanç/Zarar'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {todayTransactions.map((transaction) => (
+                        <tr key={transaction.id}>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.date}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.customerName || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.amount || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
+                              {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -2968,15 +3034,9 @@ function App() {
                                 title={editingRowId === transaction.id ? 'Kaydet' : 'Düzenle'}
                               >
                                 {editingRowId === transaction.id ? (
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                    <path d="M22 12v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5"></path>
-                                  </svg>
+                                  <span>T</span>
                                 ) : (
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                  </svg>
+                                  <span>T</span>
                                 )}
                               </button>
                               <button
@@ -2984,10 +3044,7 @@ function App() {
                                 onClick={() => handleDeleteTransaction(transaction.id)}
                                 title={t.deleteButton}
                               >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2">
-                                  <polyline points="3 6 5 6 21 6"></polyline>
-                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                </svg>
+                                <span>H</span>
                               </button>
                             </td>
                           </tr>
