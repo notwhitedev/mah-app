@@ -1666,6 +1666,7 @@ function App() {
 
     const defaultCurrency = currencyRates[0]
     const currentRate = defaultCurrency.rate || 1
+    const now = new Date()
     const newTransaction: Transaction = {
       id: generateTransactionId(),
       customerId: selectedCustomer?.id,
@@ -1675,7 +1676,7 @@ function App() {
       receiverCurrency: defaultCurrency.currency,
       senderRate: currentRate,
       receiverRate: currentRate,
-      date: new Date().toLocaleString('tr-TR'),
+      date: now.toLocaleString('tr-TR'),
       sender: selectedCustomer?.name || '',
       amount: '',
       receiver: '',
@@ -2320,7 +2321,7 @@ function App() {
                 </div>
                 <div className="stat-info">
                   <p className="stat-label">{t.totalLoss}</p>
-                  <p className={`stat-value ${stats.totalLoss > 0 ? 'loss' : ''}`}>{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '0'}</p>
+                  <p className={`stat-value ${stats.totalLoss > 0 ? 'loss-text' : ''}`}>{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '0'}</p>
                 </div>
               </div>
             </div>
@@ -2338,7 +2339,14 @@ function App() {
                 <div className="line-bar">
                   <div className="line-fill" style={{ width: stats.totalProfit > 0 ? `${Math.min(stats.totalProfit * 2, 100)}%` : '0%' }}></div>
                 </div>
-                <div className="line-value">{stats.totalProfit > 0 ? stats.totalProfit.toFixed(1) : '-'}</div>
+                <div className={`line-value ${stats.totalProfit > 0 ? 'profit-text' : ''}`}>{stats.totalProfit > 0 ? stats.totalProfit.toFixed(1) : '-'}</div>
+              </div>
+              <div className="activity-line">
+                <div className="line-label">{t.totalLoss}</div>
+                <div className="line-bar">
+                  <div className="line-fill" style={{ width: stats.totalLoss > 0 ? `${Math.min(stats.totalLoss * 2, 100)}%` : '0%' }}></div>
+                </div>
+                <div className={`line-value ${stats.totalLoss > 0 ? 'loss-text' : ''}`}>{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '-'}</div>
               </div>
               <div className="activity-line">
                 <div className="line-label">{t.activeAccounts}</div>
@@ -2802,17 +2810,8 @@ function App() {
                         {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name).map((transaction) => (
                           <tr key={transaction.id} className={editingRowId === transaction.id ? 'editing-row' : ''}>
                             <td className="readonly-cell">{transaction.id}</td>
-                            <td>
-                              {editingRowId === transaction.id ? (
-                                <input
-                                  type="text"
-                                  value={transaction.date}
-                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'date', e.target.value)}
-                                  className="table-input"
-                                />
-                              ) : (
-                                <span className="cell-value">{transaction.date}</span>
-                              )}
+                            <td className="readonly-cell">
+                              <span className="cell-value">{transaction.date}</span>
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
@@ -3006,20 +3005,6 @@ function App() {
             <h3>{t.transactionManagement}</h3>
             <div className="modal-form">
               <div className="form-group">
-                <label>{t.date}</label>
-                <input
-                  type="text"
-                  value={selectedTransactionForModal?.date || new Date().toISOString().split('T')[0]}
-                  onChange={(e) => {
-                    if (selectedTransactionForModal) {
-                      const updated = { ...selectedTransactionForModal, date: e.target.value }
-                      setSelectedTransactionForModal(updated)
-                    }
-                  }}
-                  className="modal-input"
-                />
-              </div>
-              <div className="form-group">
                 <label>{t.sender}</label>
                 <select
                   value={selectedTransactionForModal?.sender || ''}
@@ -3163,7 +3148,7 @@ function App() {
                 <label>{t.profitLoss}</label>
                 <input
                   type="text"
-                  value={selectedTransactionForModal?.profitLoss?.toFixed(1) || '0'}
+                  value={selectedTransactionForModal?.profitLoss ? Math.abs(selectedTransactionForModal.profitLoss).toFixed(1) : '0'}
                   className={`modal-input ${selectedTransactionForModal?.profitLoss && selectedTransactionForModal.profitLoss > 0 ? 'profit-text' : selectedTransactionForModal?.profitLoss && selectedTransactionForModal.profitLoss < 0 ? 'loss-text' : ''}`}
                   disabled
                 />

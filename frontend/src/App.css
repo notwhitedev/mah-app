@@ -626,6 +626,15 @@ body.dark-mode .right-sidebar.collapsed {
   font-weight: 700;
 }
 
+.stat-value.loss-text {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.dark-mode .stat-value.loss-text {
+  color: #ef4444;
+}
+
 /* Activity Lines */
 .activity-lines {
   margin-top: 30px;
