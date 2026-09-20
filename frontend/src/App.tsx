@@ -1839,7 +1839,13 @@ function App() {
     const newTransaction: Transaction = {
       ...selectedTransactionForModal,
       id: selectedTransactionForModal.id || generateTransactionId(),
-      date: selectedTransactionForModal.date || new Date().toISOString().split('T')[0],
+      date: selectedTransactionForModal.date || (() => {
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+        const day = String(now.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+      })(),
       status: (selectedTransactionForModal.status || 'pending') as 'pending' | 'completed' | 'cancelled',
       senderCurrency: selectedTransactionForModal.senderCurrency || 'USD',
       receiverCurrency: selectedTransactionForModal.receiverCurrency || 'USD',
@@ -2081,7 +2087,12 @@ function App() {
 
   // Günlük eklenen satırları hesapla
   const getTodayTransactions = () => {
-    const today = new Date().toISOString().split('T')[0]
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const today = `${year}-${month}-${day}`
+    
     const todayTransactions: Transaction[] = []
 
     customers.forEach(customer => {
@@ -3543,7 +3554,13 @@ function App() {
             receiverCurrency: 'USD',
             senderRate: 1,
             receiverRate: 1,
-            date: new Date().toISOString().split('T')[0],
+            date: (() => {
+              const now = new Date()
+              const year = now.getFullYear()
+              const month = String(now.getMonth() + 1).padStart(2, '0')
+              const day = String(now.getDate()).padStart(2, '0')
+              return `${year}-${month}-${day}`
+            })(),
             sender: '',
             amount: '',
             receiver: '',
