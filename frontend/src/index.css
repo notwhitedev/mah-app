@@ -1,7 +1,7 @@
 :root {
-  --primary: #f59e0b;
-  --primary-dark: #d97706;
-  --primary-glow: rgba(245, 158, 11, 0.35);
+  --primary: #0ea5e9;
+  --primary-dark: #0284c7;
+  --primary-glow: rgba(14, 165, 233, 0.35);
   --success: #10b981;
   --danger: #ef4444;
   --radius-sm: 8px;
