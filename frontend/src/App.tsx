@@ -1774,6 +1774,9 @@ function App() {
           const deliveryAmount = parseFloat(String(t.deliveryAmount)) || 0
           const senderRate = t.senderRate || 1
           updated.profitLoss = (amount / senderRate) - (deliveryAmount / receiverRate)
+        } else if (field === 'date') {
+          // Tarih alanı için özel işlem gerekmiyor, sadece güncelle
+          updated.date = value
         }
 
         return updated
@@ -2810,8 +2813,17 @@ function App() {
                         {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name).map((transaction) => (
                           <tr key={transaction.id} className={editingRowId === transaction.id ? 'editing-row' : ''}>
                             <td className="readonly-cell">{transaction.id}</td>
-                            <td className="readonly-cell">
-                              <span className="cell-value">{transaction.date}</span>
+                            <td>
+                              {editingRowId === transaction.id ? (
+                                <input
+                                  type="date"
+                                  value={transaction.date || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'date', e.target.value)}
+                                  className="table-input"
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.date}</span>
+                              )}
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
@@ -2900,9 +2912,18 @@ function App() {
                               )}
                             </td>
                             <td>
-                              <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
-                                {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
-                              </span>
+                              {editingRowId === transaction.id ? (
+                                <input
+                                  type="text"
+                                  value={transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                                  className={`table-input ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}
+                                  disabled
+                                />
+                              ) : (
+                                <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
+                                  {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                                </span>
+                              )}
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
@@ -3428,7 +3449,7 @@ function App() {
       {/* Sağ sidebar - butonlar */}
       <div className={`right-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className={`menu-item ${currentPage === 'home' ? 'active' : ''}`} onClick={() => setCurrentPage('home')}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="3" y1="9" x2="21" y2="9"></line>
             <line x1="9" y1="21" x2="9" y2="9"></line>
@@ -3436,7 +3457,7 @@ function App() {
           <span>{t.statistics}</span>
         </div>
         <div className={`menu-item ${currentPage === 'view-customers' || currentPage === 'transactions' ? 'active' : ''}`} onClick={() => setCurrentPage('view-customers')}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -3466,7 +3487,7 @@ function App() {
           })
           setShowTransactionModal(true)
         }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
@@ -3474,7 +3495,7 @@ function App() {
         </div>
         {currentUser && (currentUser.role === 'owner' || currentUser.role === 'developer' || currentUser.permissions?.canAddCustomers) && (
           <div className={`menu-item ${currentPage === 'add-customer' ? 'active' : ''}`} onClick={() => setCurrentPage('add-customer')}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -3482,7 +3503,7 @@ function App() {
           </div>
         )}
         <div className={`menu-item ${currentPage === 'currency-settings' ? 'active' : ''}`} onClick={() => setCurrentPage('currency-settings')}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="12" y1="1" x2="12" y2="23"></line>
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
           </svg>
@@ -3490,7 +3511,7 @@ function App() {
         </div>
         {(currentUser?.role === 'owner' || currentUser?.role === 'developer' || currentUser?.permissions?.canManageEmployees) && (
           <div className={`menu-item ${currentPage === 'employees' ? 'active' : ''}`} onClick={() => setCurrentPage('employees')}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -3500,7 +3521,7 @@ function App() {
           </div>
         )}
         <div className={`menu-item ${currentPage === 'settings' ? 'active' : ''}`} onClick={() => setCurrentPage('settings')}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
