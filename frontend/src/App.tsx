@@ -1774,9 +1774,6 @@ function App() {
           const deliveryAmount = parseFloat(String(t.deliveryAmount)) || 0
           const senderRate = t.senderRate || 1
           updated.profitLoss = (amount / senderRate) - (deliveryAmount / receiverRate)
-        } else if (field === 'date') {
-          // Tarih alanı için özel işlem gerekmiyor, sadece güncelle
-          updated.date = value
         }
 
         return updated
@@ -2813,17 +2810,8 @@ function App() {
                         {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name).map((transaction) => (
                           <tr key={transaction.id} className={editingRowId === transaction.id ? 'editing-row' : ''}>
                             <td className="readonly-cell">{transaction.id}</td>
-                            <td>
-                              {editingRowId === transaction.id ? (
-                                <input
-                                  type="date"
-                                  value={transaction.date || ''}
-                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'date', e.target.value)}
-                                  className="table-input"
-                                />
-                              ) : (
-                                <span className="cell-value">{transaction.date}</span>
-                              )}
+                            <td className="readonly-cell">
+                              <span className="cell-value">{transaction.date}</span>
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
@@ -2911,19 +2899,10 @@ function App() {
                                 <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
                               )}
                             </td>
-                            <td>
-                              {editingRowId === transaction.id ? (
-                                <input
-                                  type="text"
-                                  value={transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
-                                  className={`table-input ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}
-                                  disabled
-                                />
-                              ) : (
-                                <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
-                                  {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
-                                </span>
-                              )}
+                            <td className="readonly-cell">
+                              <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
+                                {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                              </span>
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
@@ -2985,15 +2964,21 @@ function App() {
                                 title={editingRowId === transaction.id ? 'Kaydet' : 'Düzenle'}
                               >
                                 {editingRowId === transaction.id ? (
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                    <path d="M22 12v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5"></path>
-                                  </svg>
+                                  <>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <polyline points="20 6 9 17 4 12"></polyline>
+                                      <path d="M22 12v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5"></path>
+                                    </svg>
+                                    <span>{t.saveButton}</span>
+                                  </>
                                 ) : (
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                  </svg>
+                                  <>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <span>{t.editButton}</span>
+                                  </>
                                 )}
                               </button>
                               <button
@@ -3005,6 +2990,7 @@ function App() {
                                   <polyline points="3 6 5 6 21 6"></polyline>
                                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                 </svg>
+                                <span>{t.deleteButton}</span>
                               </button>
                             </td>
                           </tr>

@@ -329,7 +329,7 @@ body.dark-mode .right-sidebar.collapsed {
   -webkit-backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
   padding: 20px 0;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.04) !important;
   border-left: 1px solid rgba(0, 0, 0, 0.06) !important;
@@ -365,6 +365,7 @@ body.dark-mode .right-sidebar.collapsed {
   color: #333333;
   opacity: 1;
   position: relative;
+  flex-shrink: 0;
 }
 
 .menu-item.active {
@@ -441,6 +442,7 @@ body.dark-mode .right-sidebar.collapsed {
   border-radius: 16px !important;
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
   border: 2px solid rgba(139, 92, 246, 0.4) !important;
+  margin: 8px 0 !important;
 }
 
 .add-transaction-button:hover {
@@ -1951,7 +1953,7 @@ body.dark-mode .right-sidebar.collapsed {
 }
 
 .table-action-button {
-  width: 32px;
+  min-width: 60px;
   height: 32px;
   border: none;
   border-radius: 6px;
@@ -1960,8 +1962,11 @@ body.dark-mode .right-sidebar.collapsed {
   justify-content: center;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  padding: 0;
+  padding: 0 8px;
   flex-shrink: 0;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .table-action-button.edit-button {
