@@ -2226,7 +2226,9 @@ function App() {
                 </div>
                 <div className="stat-info">
                   <p className="stat-label">{t.totalProfit}</p>
-                  <p className={`stat-value ${stats.totalProfit > 0 ? 'profit' : ''}`}>{stats.totalProfit > 0 ? stats.totalProfit.toFixed(1) : '0'}</p>
+                  <p className={`stat-value ${stats.totalProfit > 0 ? 'profit' : stats.totalProfit < 0 ? 'loss' : ''}`}>
+                    {stats.totalProfit.toFixed(1)}
+                  </p>
                 </div>
               </div>
               <div className="stat-card">
@@ -2254,6 +2256,20 @@ function App() {
                 <div className="stat-info">
                   <p className="stat-label">{t.activeCustomers}</p>
                   <p className="stat-value">{totalCustomers > 0 ? totalCustomers : '-'}</p>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    <polyline points="17 6 23 6 23 12"></polyline>
+                  </svg>
+                </div>
+                <div className="stat-info">
+                  <p className="stat-label">{t.profitLoss}</p>
+                  <p className={`stat-value ${stats.totalProfit > 0 ? 'profit' : stats.totalProfit < 0 ? 'loss' : ''}`}>
+                    {stats.totalProfit.toFixed(1)}
+                  </p>
                 </div>
               </div>
               <div className="stat-card">
