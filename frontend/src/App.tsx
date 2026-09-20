@@ -22,6 +22,7 @@ interface Transaction {
   profitLoss: number
   description: string
   status: 'pending' | 'completed' | 'cancelled'
+  note?: string
   [key: string]: any
 }
 
@@ -100,6 +101,8 @@ function App() {
     { currency: 'GBP', rate: 0.79 }
   ])
   const [editingCurrencyRate, setEditingCurrencyRate] = useState<{ idx: number; value: string } | null>(null)
+  const [showTransactionModal, setShowTransactionModal] = useState(false)
+  const [selectedTransactionForModal, setSelectedTransactionForModal] = useState<Transaction | null>(null)
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
     const savedDarkMode = localStorage.getItem('darkMode')
@@ -286,7 +289,12 @@ function App() {
       allowManageEmployees: 'Çalışanları yönetebilir',
       allowExportPdf: 'PDF dışa aktarabilir',
       settings: 'Ayarlar',
-      saveRate: 'Kaydet'
+      saveRate: 'Kaydet',
+      deleteRow: 'Satır Sil',
+      selectCustomer: 'Müşteri Seç',
+      addNote: 'Not Ekle',
+      note: 'Not',
+      transactionManagement: 'İşlem Yönetimi'
     },
     en: {
       appTitle: 'Flash',
@@ -420,7 +428,12 @@ function App() {
       receiverCurrency: 'Receiver Currency',
       usd: 'USD',
       currencyRateDisplay: '1 USD = {rate} {currency}',
-      saveRate: 'Save'
+      saveRate: 'Save',
+      deleteRow: 'Delete Row',
+      selectCustomer: 'Select Customer',
+      addNote: 'Add Note',
+      note: 'Note',
+      transactionManagement: 'Transaction Management'
     },
     ar: {
       appTitle: 'Flash',
@@ -554,7 +567,12 @@ function App() {
       receiverCurrency: 'عملة المستلم',
       usd: 'دولار أمريكي',
       currencyRateDisplay: '1 USD = {rate} {currency}',
-      saveRate: 'حفظ'
+      saveRate: 'حفظ',
+      deleteRow: 'حذف الصف',
+      selectCustomer: 'اختر العميل',
+      addNote: 'إضافة ملاحظة',
+      note: 'ملاحظة',
+      transactionManagement: 'إدارة المعاملات'
     }
   }
 
@@ -1508,6 +1526,7 @@ function App() {
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المرسل إليه' : t.receiver}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المبلغ المستلم' : t.deliveryAmount}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'عملة المستقبل' : t.receiverCurrency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'ملاحظة' : t.note}</th>
                   ${customColumnHeaders}
                 </tr>
               </thead>
@@ -1528,6 +1547,7 @@ function App() {
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiver || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.deliveryAmount || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiverCurrency || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.note || '-'}</td>
                       ${customColumnCells(transaction)}
                     </tr>
                   `
@@ -2238,6 +2258,41 @@ function App() {
                   <p className="stat-value">{totalCustomers > 0 ? totalCustomers : '-'}</p>
                 </div>
               </div>
+              <div className="stat-card transaction-management-card" onClick={() => {
+                if (selectedCustomer) {
+                  setSelectedTransactionForModal({
+                    id: '',
+                    customerId: selectedCustomer.id,
+                    customerName: selectedCustomer.name,
+                    currency: 'USD',
+                    senderCurrency: 'USD',
+                    receiverCurrency: 'USD',
+                    senderRate: 1,
+                    receiverRate: 1,
+                    date: new Date().toISOString().split('T')[0],
+                    sender: '',
+                    amount: '',
+                    receiver: '',
+                    deliveryAmount: '',
+                    profitLoss: 0,
+                    description: '',
+                    status: 'pending',
+                    note: ''
+                  })
+                  setShowTransactionModal(true)
+                }
+              }}>
+                <div className="stat-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </div>
+                <div className="stat-info">
+                  <p className="stat-label">{t.transactionManagement}</p>
+                  <p className="stat-value">+</p>
+                </div>
+              </div>
               <div className="stat-card">
                 <div className="stat-icon">
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -2697,6 +2752,9 @@ function App() {
                           <th data-column="sender">
                             {t.sender}
                           </th>
+                          <th data-column="note">
+                            {t.note}
+                          </th>
                           <th data-column="amount">
                             {t.amount}
                           </th>
@@ -2759,13 +2817,16 @@ function App() {
                             </td>
                             <td>
                               {editingTransaction === transaction.id ? (
-                                <input
-                                  type="text"
+                                <select
                                   value={transaction.sender}
                                   onChange={(e) => handleUpdateTransaction(transaction.id, 'sender', e.target.value)}
-                                  className="table-input"
-                                  placeholder={t.sender}
-                                />
+                                  className="table-select"
+                                >
+                                  <option value="">{t.selectCustomer}</option>
+                                  {customers.map((customer) => (
+                                    <option key={customer.id} value={customer.name}>{customer.name}</option>
+                                  ))}
+                                </select>
                               ) : (
                                 <span className="cell-value">{transaction.sender || '-'}</span>
                               )}
@@ -2785,13 +2846,16 @@ function App() {
                             </td>
                             <td>
                               {editingTransaction === transaction.id ? (
-                                <input
-                                  type="text"
+                                <select
                                   value={transaction.receiver}
                                   onChange={(e) => handleUpdateTransaction(transaction.id, 'receiver', e.target.value)}
-                                  className="table-input"
-                                  placeholder={t.receiver}
-                                />
+                                  className="table-select"
+                                >
+                                  <option value="">{t.selectCustomer}</option>
+                                  {customers.map((customer) => (
+                                    <option key={customer.id} value={customer.name}>{customer.name}</option>
+                                  ))}
+                                </select>
                               ) : (
                                 <span className="cell-value">{transaction.receiver || '-'}</span>
                               )}
@@ -2811,6 +2875,19 @@ function App() {
                             </td>
                             <td className={`profit-loss-cell ${transaction.profitLoss > 0 ? 'profit' : transaction.profitLoss < 0 ? 'loss' : ''}`}>
                               {transaction.profitLoss !== 0 ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                            </td>
+                            <td>
+                              {editingTransaction === transaction.id ? (
+                                <input
+                                  type="text"
+                                  value={transaction.note || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'note', e.target.value)}
+                                  className="table-input"
+                                  placeholder={t.note}
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.note || '-'}</span>
+                              )}
                             </td>
                             {customColumns.map(column => (
                               <td key={column.id}>
@@ -2872,12 +2949,34 @@ function App() {
                                   {t.saveButton}
                                 </button>
                               ) : (
-                                <button
-                                  className="edit-button"
-                                  onClick={() => handleEditTransaction(transaction.id)}
-                                >
-                                  {t.editButton}
-                                </button>
+                                <>
+                                  <button
+                                    className="edit-button"
+                                    onClick={() => handleEditTransaction(transaction.id)}
+                                  >
+                                    {t.editButton}
+                                  </button>
+                                  <button
+                                    className="delete-button"
+                                    onClick={() => {
+                                      if (confirm(t.confirmDeleteTransaction)) {
+                                        const newTransactions = transactions.filter(t => t.id !== transaction.id)
+                                        setTransactions(newTransactions)
+                                        if (currentUser) {
+                                          const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+                                          const text = language === 'tr'
+                                            ? `${userName} bir işlem satırını sildi.`
+                                            : language === 'en'
+                                              ? `${userName} deleted a transaction row.`
+                                              : `${userName} حذف صف معاملة.`
+                                          addEmployeeActivity(currentUser.id, text)
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    {t.deleteRow}
+                                  </button>
+                                </>
                               )}
                             </td>
                           </tr>
@@ -2891,6 +2990,150 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Transaction Management Modal */}
+      {showTransactionModal && (
+        <div className="modal-overlay" onClick={() => setShowTransactionModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>{t.transactionManagement}</h3>
+            <div className="modal-form">
+              <div className="form-group">
+                <label>{t.sender}</label>
+                <select
+                  value={selectedTransactionForModal?.sender || ''}
+                  onChange={(e) => {
+                    if (selectedTransactionForModal) {
+                      const updated = { ...selectedTransactionForModal, sender: e.target.value }
+                      setSelectedTransactionForModal(updated)
+                    }
+                  }}
+                  className="modal-select"
+                >
+                  <option value="">{t.selectCustomer}</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.name}>{customer.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>{t.receiver}</label>
+                <select
+                  value={selectedTransactionForModal?.receiver || ''}
+                  onChange={(e) => {
+                    if (selectedTransactionForModal) {
+                      const updated = { ...selectedTransactionForModal, receiver: e.target.value }
+                      setSelectedTransactionForModal(updated)
+                    }
+                  }}
+                  className="modal-select"
+                >
+                  <option value="">{t.selectCustomer}</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.name}>{customer.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>{t.amount}</label>
+                <input
+                  type="text"
+                  value={selectedTransactionForModal?.amount || ''}
+                  onChange={(e) => {
+                    if (selectedTransactionForModal) {
+                      const updated = { ...selectedTransactionForModal, amount: e.target.value }
+                      setSelectedTransactionForModal(updated)
+                    }
+                  }}
+                  className="modal-input"
+                />
+              </div>
+              <div className="form-group">
+                <label>{t.deliveryAmount}</label>
+                <input
+                  type="text"
+                  value={selectedTransactionForModal?.deliveryAmount || ''}
+                  onChange={(e) => {
+                    if (selectedTransactionForModal) {
+                      const updated = { ...selectedTransactionForModal, deliveryAmount: e.target.value }
+                      setSelectedTransactionForModal(updated)
+                    }
+                  }}
+                  className="modal-input"
+                />
+              </div>
+              <div className="form-group">
+                <label>{t.note}</label>
+                <input
+                  type="text"
+                  value={selectedTransactionForModal?.note || ''}
+                  onChange={(e) => {
+                    if (selectedTransactionForModal) {
+                      const updated = { ...selectedTransactionForModal, note: e.target.value }
+                      setSelectedTransactionForModal(updated)
+                    }
+                  }}
+                  className="modal-input"
+                />
+              </div>
+              <div className="modal-actions">
+                <button className="modal-button cancel" onClick={() => setShowTransactionModal(false)}>
+                  {t.cancelButton}
+                </button>
+                <button
+                  className="modal-button confirm"
+                  onClick={() => {
+                    if (selectedTransactionForModal && selectedCustomer) {
+                      const newTransaction: Transaction = {
+                        ...selectedTransactionForModal,
+                        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                        date: new Date().toISOString().split('T')[0],
+                        status: 'pending' as 'pending',
+                        senderCurrency: selectedTransactionForModal.senderCurrency || 'USD',
+                        receiverCurrency: selectedTransactionForModal.receiverCurrency || 'USD',
+                        senderRate: currencyRates.find(r => r.currency === selectedTransactionForModal.senderCurrency)?.rate || 1,
+                        receiverRate: currencyRates.find(r => r.currency === selectedTransactionForModal.receiverCurrency)?.rate || 1
+                      }
+                      
+                      // Calculate profit/loss
+                      const amount = parseFloat(String(newTransaction.amount)) || 0
+                      const deliveryAmount = parseFloat(String(newTransaction.deliveryAmount)) || 0
+                      const senderRate = newTransaction.senderRate || 1
+                      const receiverRate = newTransaction.receiverRate || 1
+                      newTransaction.profitLoss = (amount / senderRate) - (deliveryAmount / receiverRate)
+                      
+                      const updatedTransactions = [...selectedCustomer.transactions, newTransaction]
+                      const updatedCustomer = { ...selectedCustomer, transactions: updatedTransactions }
+                      
+                      const updatedCustomers = customers.map(c => 
+                        c.id === selectedCustomer.id ? updatedCustomer : c
+                      )
+                      setCustomers(updatedCustomers)
+                      if (selectedCustomer) {
+                        setTransactions(updatedTransactions)
+                      }
+                      
+                      if (currentUser) {
+                        const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+                        const text = language === 'tr'
+                          ? `${userName} yeni işlem satırı ekledi.`
+                          : language === 'en'
+                            ? `${userName} added a new transaction row.`
+                            : `${userName} أضاف صف معاملة جديد.`
+                        addEmployeeActivity(currentUser.id, text)
+                      }
+                      
+                      setShowTransactionModal(false)
+                      setSelectedTransactionForModal(null)
+                    }
+                  }}
+                >
+                  {t.submit}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Column Modal */}
       {showAddColumnModal && (

@@ -505,6 +505,26 @@ body.dark-mode .right-sidebar.collapsed {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
+.transaction-management-card {
+  cursor: pointer;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.transaction-management-card .stat-icon {
+  background: transparent;
+  color: #ffffff;
+}
+
+.transaction-management-card .stat-icon svg {
+  color: #ffffff;
+}
+
+.transaction-management-card .stat-value {
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 800;
+}
+
 .stat-icon {
   width: 56px;
   height: 56px;
@@ -1802,7 +1822,24 @@ body.dark-mode .right-sidebar.collapsed {
 
 .edit-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+}
+
+.delete-button {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.delete-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
 
 .save-button {
