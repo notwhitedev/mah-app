@@ -1517,6 +1517,7 @@ function App() {
             <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
               <thead>
                 <tr style="background: linear-gradient(90deg, #4c57d8 0%, #5d4bbf 100%); color: #ffffff; text-align: center;">
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'الحالة' : t.status}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المعرف' : t.transactionId}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'التاريخ' : t.date}</th>
                   <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المرسل' : t.sender}</th>
@@ -1531,8 +1532,13 @@ function App() {
               </thead>
               <tbody>
                 ${transactionsToExport.map((transaction, index) => {
+                  const rawStatus = transaction.status || 'pending'
+                  const statusText = getStatusLabel(rawStatus)
                   return `
                     <tr style="background: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; font-weight: 700;">
+                        <span style="display: inline-block; padding: 2px 8px; border-radius: 5px; background: ${rawStatus === 'pending' ? '#fef3c7' : rawStatus === 'completed' ? '#dcfce7' : '#fee2e2'}; color: ${rawStatus === 'pending' ? '#92400e' : rawStatus === 'completed' ? '#166534' : '#991b1b'};">${statusText}</span>
+                      </td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; font-weight: 700;">${transaction.id || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.date || '-'}</td>
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.sender || '-'}</td>
