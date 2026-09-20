@@ -1656,6 +1656,11 @@ function App() {
       return
     }
 
+    if (!selectedCustomer) {
+      alert(language === 'tr' ? 'Lütfen önce bir müşteri seçin.' : language === 'en' ? 'Please select a customer first.' : 'يرجى اختيار عميل أولاً.')
+      return
+    }
+
     const defaultCurrency = currencyRates[0]
     const currentRate = defaultCurrency.rate || 1
     const newTransaction: Transaction = {
@@ -1683,38 +1688,36 @@ function App() {
     })
 
     try {
-      if (selectedCustomer) {
-        const response = await fetch(`${API_URL}/api/customers/${selectedCustomer.id}/transactions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newTransaction)
-        })
+      const response = await fetch(`${API_URL}/api/customers/${selectedCustomer.id}/transactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTransaction)
+      })
 
-        if (response.ok) {
-          const apiTransaction = await response.json()
-          setTransactions([...transactions, apiTransaction])
+      if (response.ok) {
+        const apiTransaction = await response.json()
+        setTransactions([...transactions, apiTransaction])
 
-          // İşlemi müşteriye kaydet
-          const updatedCustomer = {
-            ...selectedCustomer,
-            transactions: [...(selectedCustomer.transactions || []), apiTransaction]
-          }
-          const finalCustomer = updateCustomerStats(updatedCustomer)
-          setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
-          setSelectedCustomer(finalCustomer)
-          
-          if (currentUser) {
-            const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-            const text = language === 'tr'
-              ? `${userName} "${selectedCustomer.name}" müşterisinin hesabına yeni satır ekledi.`
-              : language === 'en'
-                ? `${userName} added a new row to customer "${selectedCustomer.name}" account.`
-                : `${userName} أضاف سطرًا جديدًا إلى حساب العميل "${selectedCustomer.name}".`
-            addEmployeeActivity(currentUser.id, text)
-          }
-        } else {
-          setErrorMessage(language === 'tr' ? 'Satır buluta kaydedilemedi.' : language === 'en' ? 'Row could not be saved to the cloud.' : 'تعذر حفظ السطر في السحابة.')
+        // İşlemi müşteriye kaydet
+        const updatedCustomer = {
+          ...selectedCustomer,
+          transactions: [...(selectedCustomer.transactions || []), apiTransaction]
         }
+        const finalCustomer = updateCustomerStats(updatedCustomer)
+        setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
+        setSelectedCustomer(finalCustomer)
+        
+        if (currentUser) {
+          const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+          const text = language === 'tr'
+            ? `${userName} "${selectedCustomer.name}" müşterisinin hesabına yeni satır ekledi.`
+            : language === 'en'
+              ? `${userName} added a new row to customer "${selectedCustomer.name}" account.`
+              : `${userName} أضاف سطرًا جديدًا إلى حساب العميل "${selectedCustomer.name}".`
+          addEmployeeActivity(currentUser.id, text)
+        }
+      } else {
+        setErrorMessage(language === 'tr' ? 'Satır buluta kaydedilemedi.' : language === 'en' ? 'Row could not be saved to the cloud.' : 'تعذر حفظ السطر في السحابة.')
       }
     } catch (err) {
       setErrorMessage(language === 'tr' ? 'Sunucuya bağlanılamadı; satır eklenmedi.' : language === 'en' ? 'Could not reach the server; row was not added.' : 'تعذر الاتصال بالخادم؛ لم تتم إضافة السطر.')
@@ -2781,7 +2784,7 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {transactions.map((transaction) => (
+                        {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name).map((transaction) => (
                           <tr key={transaction.id}>
                             <td className="readonly-cell">{transaction.id}</td>
                             <td>
