@@ -342,6 +342,7 @@ function App() {
       iradeAmount: 'İrade Tutarı',
       iradeNote: 'Gönderici {sender} alıcı {receiver} hesabına {amount} irade yatırdı',
       totalIrade: 'Toplam İrade',
+      selectReceiver: 'Alıcı Seç',
       statsPeriod: 'İstatistik Dönemi',
       day: 'Gün',
       week: 'Hafta',
@@ -504,6 +505,7 @@ function App() {
       iradeAmount: 'Commission Amount',
       iradeNote: 'Sender {sender} deposited {amount} commission to receiver {receiver} account',
       totalIrade: 'Total Commission',
+      selectReceiver: 'Select Receiver',
       statsPeriod: 'Statistics Period',
       day: 'Day',
       week: 'Week',
@@ -661,11 +663,12 @@ function App() {
       small: 'صغير',
       medium: 'متوسط',
       large: 'كبير',
-      irade: 'العمولة',
-      addIrade: 'إضافة عمولة',
-      iradeAmount: 'مبلغ العمولة',
-      iradeNote: 'أودع المرسل {sender} مبلغ {amount} عمولة في حساب المستلم {receiver}',
-      totalIrade: 'إجمالي العمولات',
+      irade: 'الإرادات',
+      addIrade: 'إضافة إرادات',
+      iradeAmount: 'مبلغ الإرادات',
+      iradeNote: 'أودع المرسل {sender} مبلغ {amount} إرادات في حساب المستلم {receiver}',
+      totalIrade: 'إجمالي الإرادات',
+      selectReceiver: 'اختر المستلم',
       statsPeriod: 'فترة الإحصائيات',
       day: 'يوم',
       week: 'أسبوع',
@@ -2233,9 +2236,13 @@ function App() {
       return
     }
 
-    // Eğer silinen işlem bir irade ise, iradeler listesinden de sil
+    // Eğer silinen işlem bir irade ise, iradeler listesinden sil ve müşteriye irade miktarını geri ver
     if (targetTransaction.isIrade && targetTransaction.iradeId) {
-      setIrades(irades.filter((irade: any) => irade.id !== targetTransaction.iradeId))
+      const deletedIrade = irades.find((irade: any) => irade.id === targetTransaction.iradeId)
+      if (deletedIrade) {
+        // İradeler listesinden sil
+        setIrades(irades.filter((irade: any) => irade.id !== targetTransaction.iradeId))
+      }
     }
 
     if (window.confirm(t.confirmDeleteTransaction)) {
@@ -2410,7 +2417,10 @@ function App() {
 
   const stats = calculateTotalStats()
 
-  const netProfit = stats.totalProfit - stats.totalLoss
+  // İradelerin toplamını hesapla
+  const totalIradeAmount = irades.reduce((sum, irade) => sum + irade.amount, 0)
+
+  const netProfit = stats.totalProfit - stats.totalLoss - totalIradeAmount
 
 
 
@@ -2720,7 +2730,7 @@ function App() {
                 <div className="stat-info">
                   <p className="stat-label">{t.totalLoss}</p>
                   <p className={`stat-value ${netProfit > 0 ? 'profit-text' : netProfit < 0 ? 'loss-text' : ''}`}>
-                    {netProfit !== 0 ? netProfit.toFixed(1) : '0'}
+                    {netProfit >= 0 ? netProfit.toFixed(1) : '0'}
                   </p>
                 </div>
               </div>
@@ -3292,13 +3302,13 @@ function App() {
                               <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
                             </td>
                             <td className="readonly-cell">
-                              <span className="cell-value">irade</span>
+                              <span className="cell-value">{language === 'tr' ? 'İrade' : language === 'en' ? 'Commission' : 'إرادات'}</span>
                             </td>
                             <td className="readonly-cell">
-                              <span className="cell-value">irade</span>
+                              <span className="cell-value">{transaction.note || '-'}</span>
                             </td>
                             <td className="readonly-cell">
-                              <span className="cell-value">{t.completed}</span>
+                              <span className="cell-value">{language === 'tr' ? 'Tamamlandı' : language === 'en' ? 'Completed' : 'مكتمل'}</span>
                             </td>
                             <td className="readonly-cell">
                               <button
@@ -3688,14 +3698,14 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Alıcı Müşteri</label>
+                <label>{language === 'tr' ? 'Alıcı' : language === 'en' ? 'Receiver' : 'المستلم'}</label>
                 <select
                   id="iradeToCustomer"
                   className="modal-select"
                   value={iradeToCustomer}
                   onChange={(e) => setIradeToCustomer(e.target.value)}
                 >
-                  <option value="">Alıcı Seç</option>
+                  <option value="">{language === 'tr' ? 'Alıcı Seçin' : language === 'en' ? 'Select Receiver' : 'اختر المستلم'}</option>
                   {customers.map(customer => (
                     <option key={customer.id} value={customer.id}>
                       {customer.name}
@@ -3756,7 +3766,7 @@ function App() {
                       receiverRate: 1,
                       date: new Date().toISOString().split('T')[0],
                       sender: fromCustomerName, // Gönderici kişi
-                      amount: amount.toString(),
+                      amount: `-${amount}`, // Negatif tutar - hesaptan çıkarılacak
                       receiver: toCustomer.name, // Alıcı müşteri
                       deliveryAmount: amount.toString(), // İrade miktarı
                       profitLoss: 0, // Zarar olarak geçmesin
@@ -3781,7 +3791,7 @@ function App() {
                     setIradeAmount('')
                     setIradeToCustomer('')
                     setShowIradeModal(false)
-                    showToast('İrade başarıyla eklendi', 'success')
+                    showToast(language === 'tr' ? 'İrade başarıyla eklendi' : language === 'en' ? 'Commission added successfully' : 'تمت إضافة الإرادات بنجاح', 'success')
                   }}
                 >
                   {t.addButton}
