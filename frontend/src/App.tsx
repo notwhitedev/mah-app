@@ -3068,6 +3068,14 @@ function App() {
                             <span className="stat-value">{customerStats.totalTransactions}</span>
                           </div>
                           <div className="customer-stat">
+                            <span className="stat-label">{t.iradeLabel}</span>
+                            <span className="stat-value">{(() => {
+                              const customerIrades = irades.filter(irade => irade.toCustomerId === customer.id)
+                              const totalIrade = customerIrades.reduce((sum, irade) => sum + irade.amount, 0)
+                              return totalIrade > 0 ? totalIrade.toFixed(1) : '0'
+                            })()}</span>
+                          </div>
+                          <div className="customer-stat">
                             <span className="stat-label">{t.profitLabel}</span>
                             <span className="stat-value profit">{customerStats.profit > 0 ? customerStats.profit.toFixed(1) : '0'}</span>
                           </div>
@@ -3283,6 +3291,17 @@ function App() {
 
               {/* Excel benzeri tablo */}
               <div className="table-section">
+                {/* Tablo arama */}
+                <div className="table-search-container">
+                  <input
+                    type="text"
+                    placeholder={language === 'tr' ? 'Satır ara...' : language === 'en' ? 'Search rows...' : 'بحث عن الصفوف...'}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="table-search-input"
+                  />
+                </div>
+
                 {transactions.length === 0 ? (
                   <div className="empty-state">
                     <p>{t.noTransactionAdded}</p>
@@ -3360,7 +3379,7 @@ function App() {
                               <span className="cell-value">{language === 'tr' ? 'İrade' : language === 'en' ? 'Commission' : 'إرادات'}</span>
                             </td>
                             <td className="readonly-cell">
-                              <span className="cell-value">{transaction.note || '-'}</span>
+                              <span className="cell-value">{language === 'tr' ? 'İrade' : language === 'en' ? 'Commission' : 'إرادات'}</span>
                             </td>
                             <td className="readonly-cell">
                               <span className="cell-value">{language === 'tr' ? 'Tamamlandı' : language === 'en' ? 'Completed' : 'مكتمل'}</span>
@@ -3378,7 +3397,19 @@ function App() {
                         ))}
 
                         {/* Normal İşlem Satırları */}
-                        {(selectedCustomer?.transactions || []).filter(t => !t.isIrade).map((transaction) => (
+                        {(selectedCustomer?.transactions || []).filter(t => !t.isIrade).filter(t => {
+                          if (!searchTerm) return true
+                          const searchLower = searchTerm.toLowerCase()
+                          return (
+                            t.id.toLowerCase().includes(searchLower) ||
+                            t.date.includes(searchLower) ||
+                            (t.sender || '').toLowerCase().includes(searchLower) ||
+                            (t.receiver || '').toLowerCase().includes(searchLower) ||
+                            (t.amount || '').includes(searchLower) ||
+                            (t.deliveryAmount || '').includes(searchLower) ||
+                            (t.note || '').toLowerCase().includes(searchLower)
+                          )
+                        }).map((transaction) => (
                           <tr key={transaction.id} className={editingRowId === transaction.id ? 'editing-row' : ''}>
                             <td className="readonly-cell">{transaction.id}</td>
                             <td className="readonly-cell">
