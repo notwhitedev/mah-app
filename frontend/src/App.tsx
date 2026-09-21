@@ -3786,6 +3786,23 @@ function App() {
                   disabled
                 />
               </div>
+              <div className="form-group">
+                <label>{t.status}</label>
+                <select
+                  value={selectedTransactionForModal?.status || 'pending'}
+                  onChange={(e) => {
+                    if (selectedTransactionForModal) {
+                      const updated = { ...selectedTransactionForModal, status: e.target.value as 'pending' | 'completed' | 'cancelled' }
+                      setSelectedTransactionForModal(updated)
+                    }
+                  }}
+                  className="modal-select"
+                >
+                  <option value="pending">{t.pending}</option>
+                  <option value="completed">{t.completed}</option>
+                  <option value="cancelled">{t.cancelled}</option>
+                </select>
+              </div>
               <div className="modal-actions">
                 <button className="modal-button cancel" onClick={() => setShowTransactionModal(false)}>
                   {t.cancelButton}
