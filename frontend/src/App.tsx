@@ -2484,7 +2484,7 @@ function App() {
   // Tarih aralığındaki işlemleri hesapla
   const getDateRangeTransactions = () => {
     if (!dateRangeStartDate || !dateRangeEndDate) return []
-    
+
     const dateRangeTransactions: Transaction[] = []
 
     customers.forEach(customer => {
@@ -2492,7 +2492,8 @@ function App() {
         if (t.date >= dateRangeStartDate && t.date <= dateRangeEndDate) {
           dateRangeTransactions.push({
             ...t,
-            customerName: customer.name
+            customerName: customer.name,
+            customerId: customer.id
           })
         }
       })
@@ -2886,9 +2887,12 @@ function App() {
                                 const customer = customers.find(c => c.id === transaction.customerId)
                                 if (customer) {
                                   handleAddTransaction(customer)
+                                  // Seçili müşteri set edildikten sonra düzenleme modunu aç
                                   setTimeout(() => {
+                                    setSelectedCustomer(customer)
+                                    setTransactions(customer.transactions || [])
                                     setEditingRowId(transaction.id)
-                                  }, 100)
+                                  }, 200)
                                 }
                               }}
                               title={language === 'tr' ? 'Düzenle' : language === 'en' ? 'Edit' : 'تعديل'}
