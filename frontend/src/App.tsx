@@ -2726,6 +2726,30 @@ function App() {
               </div>
             </div>
 
+            <div className="activity-lines">
+              <div className="activity-line">
+                <div className="line-label">{t.totalProfit}</div>
+                <div className="line-bar">
+                  <div className="line-fill" style={{ width: stats.totalProfit > 0 ? `${Math.min(stats.totalProfit * 2, 100)}%` : '0%', backgroundColor: '#22c55e' }}></div>
+                </div>
+                <div className={`line-value ${stats.totalProfit > 0 ? 'profit-text' : ''}`}>{stats.totalProfit > 0 ? stats.totalProfit.toFixed(1) : '-'}</div>
+              </div>
+              <div className="activity-line">
+                <div className="line-label">{t.totalLoss}</div>
+                <div className="line-bar">
+                  <div className="line-fill" style={{ width: stats.totalLoss > 0 ? `${Math.min(stats.totalLoss * 2, 100)}%` : '0%', backgroundColor: '#ef4444' }}></div>
+                </div>
+                <div className="line-value loss-text">{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '-'}</div>
+              </div>
+              <div className="activity-line">
+                <div className="line-label">{t.activeAccounts}</div>
+                <div className="line-bar">
+                  <div className="line-fill" style={{ width: totalCustomers > 0 ? `${Math.min(totalCustomers * 10, 100)}%` : '0%' }}></div>
+                </div>
+                <div className="line-value">{totalCustomers}</div>
+              </div>
+            </div>
+
             {/* Tarih Aralığı İşlemleri */}
             {dateRangeTransactions.length > 0 && (
               <div className="today-transactions-container">
@@ -3262,9 +3286,21 @@ function App() {
                               <span className="cell-value">{transaction.receiver || '-'}</span>
                             </td>
                             <td className="readonly-cell">
-                              <span className="cell-value">{transaction.note || '-'}</span>
+                              <span className="cell-value">{transaction.receiverCurrency || '-'}</span>
                             </td>
-                            <td className="readonly-cell" colSpan={6}>
+                            <td className="readonly-cell">
+                              <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
+                            </td>
+                            <td className="readonly-cell">
+                              <span className="cell-value">irade</span>
+                            </td>
+                            <td className="readonly-cell">
+                              <span className="cell-value">irade</span>
+                            </td>
+                            <td className="readonly-cell">
+                              <span className="cell-value">{t.completed}</span>
+                            </td>
+                            <td className="readonly-cell">
                               <button
                                 className="table-action-button delete-button"
                                 onClick={() => handleDeleteTransaction(transaction.id)}
@@ -3722,7 +3758,7 @@ function App() {
                       sender: fromCustomerName, // Gönderici kişi
                       amount: amount.toString(),
                       receiver: toCustomer.name, // Alıcı müşteri
-                      deliveryAmount: amount.toString(),
+                      deliveryAmount: amount.toString(), // İrade miktarı
                       profitLoss: 0, // Zarar olarak geçmesin
                       description: 'İrade',
                       status: 'completed',
