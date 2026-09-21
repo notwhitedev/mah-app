@@ -122,6 +122,8 @@ function App() {
   const [showExportModal, setShowExportModal] = useState(false)
   const [exportStartDate, setExportStartDate] = useState('')
   const [exportEndDate, setExportEndDate] = useState('')
+  const [dateRangeStartDate, setDateRangeStartDate] = useState('')
+  const [dateRangeEndDate, setDateRangeEndDate] = useState('')
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null)
   const [allUsers, setAllUsers] = useState<UserAccount[]>([])
   const [employeeActivities, setEmployeeActivities] = useState<Record<string, EmployeeActivityLog[]>>({})
@@ -296,7 +298,11 @@ function App() {
       note: 'Not',
       transactionManagement: 'İşlem Yönetimi',
       todayTransactions: 'Günlük',
-      noTodayTransactions: 'Bugün henüz satır eklenmedi'
+      noTodayTransactions: 'Bugün henüz satır eklenmedi',
+      searchCustomer: 'Müşteri Ara',
+      dateRange: 'Tarih Aralığı',
+      exportDateRangePDF: 'Tarih Aralığı PDF İndir',
+      noDateRangeTransactions: 'Bu tarih aralığında işlem yok'
     },
     en: {
       appTitle: 'Flash',
@@ -437,7 +443,11 @@ function App() {
       note: 'Note',
       transactionManagement: 'Transaction Management',
       todayTransactions: 'Daily',
-      noTodayTransactions: 'No rows added today'
+      noTodayTransactions: 'No rows added today',
+      searchCustomer: 'Search Customer',
+      dateRange: 'Date Range',
+      exportDateRangePDF: 'Export Date Range PDF',
+      noDateRangeTransactions: 'No transactions in this date range'
     },
     ar: {
       appTitle: 'Flash',
@@ -578,7 +588,11 @@ function App() {
       note: 'ملاحظة',
       transactionManagement: 'إدارة المعاملات',
       todayTransactions: 'يومي',
-      noTodayTransactions: 'لم يتم إضافة صفوف اليوم'
+      noTodayTransactions: 'لم يتم إضافة صفوف اليوم',
+      searchCustomer: 'بحث عن العميل',
+      dateRange: 'نطاق التاريخ',
+      exportDateRangePDF: 'تصدير PDF نطاق التاريخ',
+      noDateRangeTransactions: 'لا توجد معاملات في هذا النطاق الزمني'
     }
   }
 
@@ -1629,6 +1643,194 @@ function App() {
     setShowExportModal(false)
   }
 
+  const exportDateRangePDF = () => {
+    if (dateRangeTransactions.length === 0) return
+
+    const currencySummary = {
+      lena: {} as Record<string, number>,
+      lekum: {} as Record<string, number>
+    }
+
+    dateRangeTransactions.forEach((transaction) => {
+      if (transaction.status === 'cancelled') return
+
+      const senderCurrency = (transaction.senderCurrency || transaction.currency || 'USD').toUpperCase()
+      const receiverCurrency = (transaction.receiverCurrency || transaction.currency || 'USD').toUpperCase()
+      const sentAmount = Number(transaction.amount || 0)
+      const receivedAmount = Number(transaction.deliveryAmount || 0)
+
+      if (!Number.isNaN(sentAmount) && sentAmount > 0) {
+        currencySummary.lekum[senderCurrency] = (currencySummary.lekum[senderCurrency] || 0) + sentAmount
+      }
+
+      if (!Number.isNaN(receivedAmount) && receivedAmount > 0) {
+        currencySummary.lena[receiverCurrency] = (currencySummary.lena[receiverCurrency] || 0) + receivedAmount
+      }
+    })
+
+    const summaryLabels = {
+      tr: { title: 'Flash', date: 'Tarih', lena: 'Sizin', lekum: 'Bize', lenaText: 'Sizin', lekumText: 'Bize', currency: 'Para Birimi' },
+      en: { title: 'Flash', date: 'Date', lena: 'To You', lekum: 'To Us', lenaText: 'To You', lekumText: 'To Us', currency: 'Currency' },
+      ar: { title: 'Flash', date: 'التاريخ', lena: 'لكم', lekum: 'لنا', lenaText: 'لكم', lekumText: 'لنا', currency: 'العملة' }
+    } as const
+
+    const labels = summaryLabels[language]
+    const pdfTitle = `${t.dateRange} (${dateRangeStartDate} - ${dateRangeEndDate})`
+    const pdfTitleHtml = `<span style="display:inline-block; text-align:center; font-family: Tahoma, Arial, sans-serif;">${pdfTitle}</span>`
+    const pdfFooterHtml = language === 'ar'
+      ? '<span dir="rtl" style="display:inline-block; direction:rtl; text-align:center; unicode-bidi:plaintext; font-family: Tahoma, Arial, sans-serif;">Flash</span>'
+      : language === 'en'
+        ? 'Flash'
+        : 'Flash'
+    const currentDate = new Date().toLocaleDateString(language === 'ar' ? 'ar-EG' : 'tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+
+    const customColumnHeaders = customColumns.map(column => `
+      <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${column.name}</th>
+    `).join('')
+
+    const customColumnCells = (transaction: Transaction) => customColumns.map((column) => {
+      const value = transaction[column.id]
+      const display = value === undefined || value === null || value === '' ? '-' : String(value)
+      return `<td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${display}</td>`
+    }).join('')
+
+    const allCurrencyKeys = Array.from(new Set([
+      ...Object.keys(currencySummary.lena),
+      ...Object.keys(currencySummary.lekum)
+    ])).sort()
+
+    const currencyRows = allCurrencyKeys.length > 0 ? allCurrencyKeys.map((currency) => {
+      const total = currencySummary.lena[currency] || 0
+      const delivered = currencySummary.lekum[currency] || 0
+      return `
+        <tr>
+          <td style="padding: 7px 8px; border: 1px solid #e5e7eb; background: #f8fafc; font-weight: 700; color: #0f172a;">${currency}</td>
+          <td style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: center; color: #16a34a; font-weight: 700;">${Number(total).toFixed(2)}</td>
+          <td style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: center; color: #dc2626; font-weight: 700;">${Number(delivered).toFixed(2)}</td>
+        </tr>
+      `
+    }).join('') : `
+      <tr>
+        <td colspan="3" style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; color: #475569;">-</td>
+      </tr>
+    `
+
+    const element = document.createElement('div')
+    element.innerHTML = `
+      <div style="font-family: ${language === 'ar' ? "Tahoma, Arial, sans-serif" : "Arial, sans-serif"}; font-weight: 700; width: 100%; min-height: 100%; background: #ececec; padding: 20px; box-sizing: border-box; direction: ${language === 'ar' ? 'rtl' : 'ltr'}; color: #1f2937;">
+        <div style="background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 48%, #0369a1 100%); border-radius: 14px 14px 0 0; padding: 16px 18px; color: #ffffff; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 10px rgba(14,165,233,0.14);">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+            <div style="display: flex; flex-direction: column; align-items: ${language === 'ar' ? 'flex-end' : 'flex-start'}; min-width: 180px;">
+              <span style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 2px;">${labels.date}</span>
+              <span style="font-size: 14px; font-weight: 700;">${currentDate}</span>
+            </div>
+            <div style="flex: 1; text-align: center; font-size: 18px; font-weight: 800; letter-spacing: 0.2px;">${pdfTitleHtml}</div>
+            <div style="font-size: 20px; font-weight: 800; text-align: ${language === 'ar' ? 'left' : 'right'}; min-width: 180px;">${t.dateRange}</div>
+          </div>
+        </div>
+
+        <div style="background: #f5f5f5; border: 1px solid #d8d8d8; border-top: none; border-radius: 0 0 12px 12px; padding: 18px 14px 10px;">
+          <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 150px; background: #ffffff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 10px 12px;">
+              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">${t.dateRange}</div>
+              <div style="font-size: 12px; font-weight: 700; color: #1f2937;">${dateRangeStartDate} - ${dateRangeEndDate}</div>
+            </div>
+            <div style="flex: 1; min-width: 150px; background: #ffffff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 10px 12px; text-align: center;">
+              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">${t.totalTransactionsLabel}</div>
+              <div style="font-size: 12px; font-weight: 700; color: #1f2937;">${dateRangeTransactions.length}</div>
+            </div>
+          </div>
+
+          <div style="background: #ffffff; border: 1px solid #d8d8d8; border-radius: 8px; margin-bottom: 12px; overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+              <thead>
+                <tr style="background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%); color: #ffffff;">
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.id}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.date}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.sender}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.senderCurrency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.amount}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.receiver}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.receiverCurrency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.deliveryAmount}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.profitLoss}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.status}</th>
+                  ${customColumnHeaders}
+                </tr>
+              </thead>
+              <tbody>
+                ${dateRangeTransactions.map((transaction) => `
+                  <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.id}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.date}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.sender || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.senderCurrency || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.amount || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiver || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiverCurrency || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.deliveryAmount || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: ${transaction.profitLoss > 0 ? '#16a34a' : transaction.profitLoss < 0 ? '#dc2626' : '#0f172a'}; font-weight: 700;">${transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.status === 'pending' ? t.pending : transaction.status === 'completed' ? t.completed : transaction.status === 'cancelled' ? t.cancelled : transaction.status}</td>
+                    ${customColumnCells(transaction)}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div style="background: #ffffff; border: 1px solid #d8d8d8; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #1f2937; margin-bottom: 8px; text-align: center;">${labels.currency} - ${labels.lekumText} / ${labels.lenaText}</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+              <thead>
+                <tr style="background: #f8fafc;">
+                  <th style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: left; font-weight: 700; color: #0f172a;">${labels.currency}</th>
+                  <th style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: 700; color: #dc2626;">${labels.lekumText}</th>
+                  <th style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: 700; color: #16a34a;">${labels.lenaText}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${currencyRows}
+              </tbody>
+            </table>
+          </div>
+
+          <div style="background: #ffffff; border: 1px solid #d8d8d8; border-radius: 8px; padding: 12px;">
+            <div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 120px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px;">
+                <div style="font-size: 9px; color: #6b7280; margin-bottom: 2px;">${t.profitLabel}</div>
+                <div style="font-size: 12px; font-weight: 700; color: #16a34a;">${dateRangeTransactions.reduce((sum, t) => sum + (t.profitLoss > 0 ? t.profitLoss : 0), 0).toFixed(1)}</div>
+              </div>
+              <div style="flex: 1; min-width: 120px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px;">
+                <div style="font-size: 9px; color: #6b7280; margin-bottom: 2px;">${t.lossLabel}</div>
+                <div style="font-size: 12px; font-weight: 700; color: #dc2626;">${Math.abs(dateRangeTransactions.reduce((sum, t) => sum + (t.profitLoss < 0 ? t.profitLoss : 0), 0)).toFixed(1)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; padding: 16px; font-size: 10px; color: #6b7280; background: #f5f5f5; border-top: 1px solid #d8d8d8; border-radius: 0 0 12px 12px; margin-top: 12px;">
+          ${pdfFooterHtml}
+        </div>
+      </div>
+    `
+
+    const opt = {
+      margin: 0.5,
+      filename: `flash_date_range_${dateRangeStartDate}_${dateRangeEndDate}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in' as const, format: 'letter' as const, orientation: 'portrait' as const }
+    }
+
+    html2pdf().set(opt).from(element).save()
+  }
+
   // Müşteri istatistiklerini güncelle (USD bazında)
   const updateCustomerStats = (customer: Customer) => {
     const transactions = customer.transactions || []
@@ -2090,6 +2292,28 @@ function App() {
 
   const stats = calculateTotalStats()
 
+  // Tarih aralığındaki işlemleri hesapla
+  const getDateRangeTransactions = () => {
+    if (!dateRangeStartDate || !dateRangeEndDate) return []
+    
+    const dateRangeTransactions: Transaction[] = []
+
+    customers.forEach(customer => {
+      (customer.transactions || []).forEach((t: Transaction) => {
+        if (t.date >= dateRangeStartDate && t.date <= dateRangeEndDate) {
+          dateRangeTransactions.push({
+            ...t,
+            customerName: customer.name
+          })
+        }
+      })
+    })
+
+    return dateRangeTransactions
+  }
+
+  const dateRangeTransactions = getDateRangeTransactions()
+
   // Günlük eklenen satırları hesapla
   const getTodayTransactions = () => {
     const now = new Date()
@@ -2400,6 +2624,106 @@ function App() {
                 <div className="line-value">{totalCustomers}</div>
               </div>
             </div>
+
+            {/* Tarih Aralığı Seçici */}
+            <div className="date-range-container">
+              <h3>{t.dateRange}</h3>
+              <div className="date-range-inputs">
+                <div className="date-range-input">
+                  <label>{t.startDate}</label>
+                  <input
+                    type="date"
+                    value={dateRangeStartDate}
+                    onChange={(e) => setDateRangeStartDate(e.target.value)}
+                    className="date-input"
+                  />
+                </div>
+                <div className="date-range-input">
+                  <label>{t.endDate}</label>
+                  <input
+                    type="date"
+                    value={dateRangeEndDate}
+                    onChange={(e) => setDateRangeEndDate(e.target.value)}
+                    className="date-input"
+                  />
+                </div>
+                {dateRangeTransactions.length > 0 && (
+                  <button
+                    className="export-button"
+                    onClick={() => exportDateRangePDF()}
+                  >
+                    {t.exportDateRangePDF}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Tarih Aralığı İşlemleri */}
+            {dateRangeTransactions.length > 0 && (
+              <div className="today-transactions-container">
+                <h3>{t.dateRange} ({dateRangeStartDate} - {dateRangeEndDate})</h3>
+                <div className="table-container daily-table">
+                  <table className="excel-table compact-table">
+                    <thead>
+                      <tr>
+                        <th data-column="id">{t.id}</th>
+                        <th data-column="date">{t.date}</th>
+                        <th data-column="sender">{t.sender}</th>
+                        <th data-column="senderCurrency">{t.senderCurrency}</th>
+                        <th data-column="amount">{t.amount}</th>
+                        <th data-column="receiver">{t.receiver}</th>
+                        <th data-column="receiverCurrency">{t.receiverCurrency}</th>
+                        <th data-column="deliveryAmount">{t.deliveryAmount}</th>
+                        <th data-column="profitLoss">{t.profitLoss}</th>
+                        <th data-column="status">{t.status}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dateRangeTransactions.map((transaction) => (
+                        <tr key={transaction.id}>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.id}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.date}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.sender || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.senderCurrency || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.amount || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.receiver || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.receiverCurrency || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
+                              {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                            </span>
+                          </td>
+                          <td className="readonly-cell">
+                            <span className="cell-value">
+                              {transaction.status === 'pending' ? t.pending :
+                               transaction.status === 'completed' ? t.completed :
+                               transaction.status === 'cancelled' ? t.cancelled : transaction.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* Günlük Eklenen Satırlar */}
             {todayTransactions.length > 0 && (
@@ -2930,16 +3254,22 @@ function App() {
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
-                                <select
-                                  value={transaction.sender || ''}
-                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'sender', e.target.value)}
-                                  className="table-select"
-                                >
-                                  <option value="">{t.selectCustomer}</option>
-                                  {customers.map((customer) => (
-                                    <option key={customer.id} value={customer.name}>{customer.name}</option>
-                                  ))}
-                                </select>
+                                <>
+                                  <input
+                                    list="customer-list"
+                                    value={transaction.sender || ''}
+                                    onChange={(e) => handleUpdateTransaction(transaction.id, 'sender', e.target.value)}
+                                    className="table-input"
+                                    placeholder={t.searchCustomer}
+                                  />
+                                  <datalist id="customer-list">
+                                    {customers.map((customer) => (
+                                      <option key={customer.id} value={customer.name}>
+                                        {customer.name} (ID: {customer.id})
+                                      </option>
+                                    ))}
+                                  </datalist>
+                                </>
                               ) : (
                                 <span className="cell-value">{transaction.sender || '-'}</span>
                               )}
@@ -2973,16 +3303,22 @@ function App() {
                             </td>
                             <td>
                               {editingRowId === transaction.id ? (
-                                <select
-                                  value={transaction.receiver || ''}
-                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'receiver', e.target.value)}
-                                  className="table-select"
-                                >
-                                  <option value="">{t.selectCustomer}</option>
-                                  {customers.map((customer) => (
-                                    <option key={customer.id} value={customer.name}>{customer.name}</option>
-                                  ))}
-                                </select>
+                                <>
+                                  <input
+                                    list="customer-list"
+                                    value={transaction.receiver || ''}
+                                    onChange={(e) => handleUpdateTransaction(transaction.id, 'receiver', e.target.value)}
+                                    className="table-input"
+                                    placeholder={t.searchCustomer}
+                                  />
+                                  <datalist id="customer-list">
+                                    {customers.map((customer) => (
+                                      <option key={customer.id} value={customer.name}>
+                                        {customer.name} (ID: {customer.id})
+                                      </option>
+                                    ))}
+                                  </datalist>
+                                </>
                               ) : (
                                 <span className="cell-value">{transaction.receiver || '-'}</span>
                               )}
@@ -3112,7 +3448,8 @@ function App() {
             <div className="modal-form">
               <div className="form-group">
                 <label>{t.sender}</label>
-                <select
+                <input
+                  list="modal-customer-list"
                   value={selectedTransactionForModal?.sender || ''}
                   onChange={(e) => {
                     if (selectedTransactionForModal) {
@@ -3120,13 +3457,16 @@ function App() {
                       setSelectedTransactionForModal(updated)
                     }
                   }}
-                  className="modal-select"
-                >
-                  <option value="">{t.selectCustomer}</option>
+                  className="modal-input"
+                  placeholder={t.searchCustomer}
+                />
+                <datalist id="modal-customer-list">
                   {customers.map((customer) => (
-                    <option key={customer.id} value={customer.name}>{customer.name}</option>
+                    <option key={customer.id} value={customer.name}>
+                      {customer.name} (ID: {customer.id})
+                    </option>
                   ))}
-                </select>
+                </datalist>
               </div>
               <div className="form-group">
                 <label>{t.senderCurrency}</label>
@@ -3175,7 +3515,8 @@ function App() {
               </div>
               <div className="form-group">
                 <label>{t.receiver}</label>
-                <select
+                <input
+                  list="modal-customer-list"
                   value={selectedTransactionForModal?.receiver || ''}
                   onChange={(e) => {
                     if (selectedTransactionForModal) {
@@ -3183,13 +3524,16 @@ function App() {
                       setSelectedTransactionForModal(updated)
                     }
                   }}
-                  className="modal-select"
-                >
-                  <option value="">{t.selectCustomer}</option>
+                  className="modal-input"
+                  placeholder={t.searchCustomer}
+                />
+                <datalist id="modal-customer-list">
                   {customers.map((customer) => (
-                    <option key={customer.id} value={customer.name}>{customer.name}</option>
+                    <option key={customer.id} value={customer.name}>
+                      {customer.name} (ID: {customer.id})
+                    </option>
                   ))}
-                </select>
+                </datalist>
               </div>
               <div className="form-group">
                 <label>{t.receiverCurrency}</label>

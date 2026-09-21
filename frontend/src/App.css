@@ -48,8 +48,82 @@ body {
   background-attachment: fixed;
   color: #1f2937;
   transition: background-color 0.3s, color 0.3s;
-  margin: 0;
-  padding: 0;
+}
+
+/* Date Range Container */
+.date-range-container {
+  background: #ffffff;
+  border: 1px solid #d8d8d8;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.date-range-container h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 12px;
+}
+
+.date-range-inputs {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.date-range-input {
+  flex: 1;
+  min-width: 150px;
+}
+
+.date-range-input label {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.date-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #1f2937;
+  background: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.export-button {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.export-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.export-button:active {
+  transform: translateY(0);
 }
 
 .app {
