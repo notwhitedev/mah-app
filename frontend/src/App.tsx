@@ -554,7 +554,7 @@ function App() {
       totalProfit: 'إجمالي الربح',
       totalTransactions: 'إجمالي المعاملات',
       activeCustomers: 'العملاء النشطين',
-      totalLoss: 'العمولات',
+      totalLoss: 'الإرادات',
       iradeLabel: 'الإرادات',
       thisMonthActivity: 'نشاط هذا الشهر',
       activeAccounts: 'الحسابات النشطة',
@@ -2291,9 +2291,12 @@ function App() {
 
     // Eğer silinen işlem bir irade ise, iradeler listesinden sil
     if (targetTransaction.isIrade && targetTransaction.iradeId) {
-      const updatedIrades = irades.filter((irade: any) => irade.id !== targetTransaction.iradeId)
-      setIrades(updatedIrades)
-      localStorage.setItem('irades', JSON.stringify(updatedIrades))
+      const deletedIrade = irades.find((irade: any) => irade.id === targetTransaction.iradeId)
+      if (deletedIrade) {
+        const updatedIrades = irades.filter((irade: any) => irade.id !== targetTransaction.iradeId)
+        setIrades(updatedIrades)
+        localStorage.setItem('irades', JSON.stringify(updatedIrades))
+      }
     }
 
     if (window.confirm(t.confirmDeleteTransaction)) {
@@ -2473,10 +2476,8 @@ function App() {
 
   const stats = calculateTotalStats()
 
-  // İradelerin toplamını hesapla
-  const totalIradeAmount = irades.reduce((sum, irade) => sum + irade.amount, 0)
-
-  const netProfit = stats.totalProfit - stats.totalLoss - totalIradeAmount
+  // İradelerin toplamını hesapla (negatif olarak - irade yapıldığında düşsün)
+  const totalIradeAmount = -irades.reduce((sum, irade) => sum + irade.amount, 0)
 
 
 
@@ -2785,8 +2786,8 @@ function App() {
                 </div>
                 <div className="stat-info">
                   <p className="stat-label">{t.totalLoss}</p>
-                  <p className={`stat-value ${netProfit > 0 ? 'profit-text' : netProfit < 0 ? 'loss-text' : ''}`}>
-                    {netProfit >= 0 ? netProfit.toFixed(1) : '0'}
+                  <p className={`stat-value ${totalIradeAmount > 0 ? 'profit-text' : totalIradeAmount < 0 ? 'loss-text' : ''}`}>
+                    {totalIradeAmount > 0 ? `+${totalIradeAmount.toFixed(1)}` : totalIradeAmount < 0 ? totalIradeAmount.toFixed(1) : '0'}
                   </p>
                 </div>
               </div>
@@ -2803,9 +2804,11 @@ function App() {
               <div className="activity-line">
                 <div className="line-label">{t.iradeLabel}</div>
                 <div className="line-bar">
-                  <div className="line-fill" style={{ width: totalIradeAmount > 0 ? `${Math.min(totalIradeAmount * 2, 100)}%` : '0%', backgroundColor: '#ef4444' }}></div>
+                  <div className="line-fill" style={{ width: totalIradeAmount > 0 ? `${Math.min(totalIradeAmount * 2, 100)}%` : '0%', backgroundColor: totalIradeAmount > 0 ? '#22c55e' : '#ef4444' }}></div>
                 </div>
-                <div className="line-value loss-text">{totalIradeAmount > 0 ? totalIradeAmount.toFixed(1) : '-'}</div>
+                <div className={`line-value ${totalIradeAmount > 0 ? 'profit-text' : totalIradeAmount < 0 ? 'loss-text' : ''}`}>
+                  {totalIradeAmount > 0 ? `+${totalIradeAmount.toFixed(1)}` : totalIradeAmount < 0 ? totalIradeAmount.toFixed(1) : '0'}
+                </div>
               </div>
               <div className="activity-line">
                 <div className="line-label">{t.activeAccounts}</div>
@@ -3787,6 +3790,12 @@ function App() {
                   value={iradeAmount}
                   onChange={(e) => setIradeAmount(e.target.value)}
                 />
+              </div>
+              <div className="form-group">
+                <label>{language === 'tr' ? 'Toplam İrade' : language === 'en' ? 'Total Commission' : 'إجمالي الإرادات'}</label>
+                <div className={`modal-input ${totalIradeAmount > 0 ? 'profit-text' : totalIradeAmount < 0 ? 'loss-text' : ''}`}>
+                  {totalIradeAmount > 0 ? `+${totalIradeAmount.toFixed(1)}` : totalIradeAmount < 0 ? totalIradeAmount.toFixed(1) : '0'}
+                </div>
               </div>
               <div className="form-group">
                 <label>{language === 'tr' ? 'Alıcı' : language === 'en' ? 'Receiver' : 'المستلم'}</label>
