@@ -1273,7 +1273,7 @@ function App() {
     // İradeleri backend'den yükle
     const loadIrades = async () => {
       try {
-        const apiIrades = await cloudApi.getIrades(storageOwnerId)
+        const apiIrades = await cloudApi.getIrades(storageOwnerId || undefined)
         setIrades(apiIrades)
       } catch {
         console.error('Failed to load irades from backend')
@@ -3738,7 +3738,7 @@ function App() {
                 </button>
                 <button
                   className="modal-button confirm"
-                  onClick={() => {
+                  onClick={async () => {
                     const amountInput = document.getElementById('iradeAmount') as HTMLInputElement
                     const toCustomerSelect = document.getElementById('iradeToCustomer') as HTMLSelectElement
                     const amount = parseFloat(amountInput.value)
