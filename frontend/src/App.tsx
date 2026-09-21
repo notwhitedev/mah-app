@@ -2896,14 +2896,20 @@ function App() {
                               }}
                               title={language === 'tr' ? 'Düzenle' : language === 'en' ? 'Edit' : 'تعديل'}
                             >
-                              <span>T</span>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                              </svg>
                             </button>
                             <button
                               className="table-action-button delete-button"
                               onClick={() => handleDeleteTransaction(transaction.id)}
                               title={t.deleteButton}
                             >
-                              <span>H</span>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              </svg>
                             </button>
                           </td>
                         </tr>
@@ -3122,20 +3128,33 @@ function App() {
                               <button
                                 className="action-button transaction-button"
                                 onClick={() => handleAddTransaction(customer)}
+                                title={t.transactions}
                               >
-                                {t.transactions}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
                               </button>
                               <button
                                 className="action-button"
                                 onClick={() => handleExportClick(customer)}
+                                title={t.exportPDF}
                               >
-                                {t.exportPDF}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                  <polyline points="7 10 12 15 17 10"></polyline>
+                                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
                               </button>
                               <button
                                 className="action-button delete-button"
                                 onClick={() => handleDeleteCustomer(customer.id)}
+                                title={t.deleteCustomer}
                               >
-                                {t.deleteCustomer}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6"></polyline>
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
                               </button>
                             </div>
                           </div>
@@ -3426,7 +3445,10 @@ function App() {
                                 onClick={() => handleDeleteTransaction(transaction.id)}
                                 title={t.deleteButton}
                               >
-                                <span>H</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6"></polyline>
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
                               </button>
                             </td>
                           </tr>
@@ -3598,9 +3620,14 @@ function App() {
                                 title={editingRowId === transaction.id ? 'Kaydet' : 'Düzenle'}
                               >
                                 {editingRowId === transaction.id ? (
-                                  <span>T</span>
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                  </svg>
                                 ) : (
-                                  <span>T</span>
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                  </svg>
                                 )}
                               </button>
                               <button
@@ -3608,7 +3635,10 @@ function App() {
                                 onClick={() => handleDeleteTransaction(transaction.id)}
                                 title={t.deleteButton}
                               >
-                                <span>H</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6"></polyline>
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
                               </button>
                             </td>
                           </tr>
