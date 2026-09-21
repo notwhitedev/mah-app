@@ -2410,54 +2410,9 @@ function App() {
 
   const stats = calculateTotalStats()
 
-  // İradeler hesaplama fonksiyonu
-  const calculateTotalIrade = () => {
-    let totalIrade = 0
-    irades.forEach(irade => {
-      totalIrade += irade.amount
-    })
-    return totalIrade
-  }
-
-  const totalIrade = calculateTotalIrade()
   const netProfit = stats.totalProfit - stats.totalLoss
 
-  // Tarih aralığı bazlı istatistik hesaplama
-  const calculateDateRangeStats = () => {
-    if (!dateRangeStartDate || !dateRangeEndDate) {
-      return { rangeProfit: 0, rangeLoss: 0, rangeTransactions: 0 }
-    }
 
-    const startDate = new Date(dateRangeStartDate)
-    const endDate = new Date(dateRangeEndDate)
-    endDate.setHours(23, 59, 59, 999)
-
-    let rangeProfit = 0
-    let rangeLoss = 0
-    let rangeTransactions = 0
-
-    customers.forEach(customer => {
-      (customer.transactions || []).forEach(t => {
-        if (t.status === 'cancelled' || t.isIrade) return // İradeleri dahil etme
-
-        const transactionDate = new Date(t.date)
-        if (transactionDate >= startDate && transactionDate <= endDate) {
-          rangeTransactions++
-
-          const senderRate = t.senderRate || 1
-          if (t.profitLoss > 0) {
-            rangeProfit += t.profitLoss / senderRate
-          } else if (t.profitLoss < 0) {
-            rangeLoss += Math.abs(t.profitLoss) / senderRate
-          }
-        }
-      })
-    })
-
-    return { rangeProfit, rangeLoss, rangeTransactions }
-  }
-
-  const dateRangeStats = calculateDateRangeStats()
 
   // Tarih aralığındaki işlemleri hesapla
   const getDateRangeTransactions = () => {
@@ -2482,32 +2437,6 @@ function App() {
   const dateRangeTransactions = getDateRangeTransactions()
 
   // Günlük eklenen satırları hesapla
-  const getTodayTransactions = () => {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate()).padStart(2, '0')
-    const today = `${year}-${month}-${day}`
-    
-    const todayTransactions: Transaction[] = []
-
-    customers.forEach(customer => {
-      (customer.transactions || []).forEach((t: Transaction) => {
-        // Tarih kontrolünü daha esnek yap - cancelled olsa bile göster
-        if (t.date === today) {
-          todayTransactions.push({
-            ...t,
-            customerName: customer.name
-          })
-        }
-      })
-    })
-
-    return todayTransactions
-  }
-
-  const todayTransactions = getTodayTransactions()
-
   return (
     <div className={`app ${darkMode ? 'dark-mode' : 'light-mode'} ${language === 'ar' ? 'rtl' : ''}`} onClick={closeContextMenu} dir={language === 'ar' ? 'rtl' : 'ltr'}>
       {toast && (
@@ -2797,43 +2726,6 @@ function App() {
               </div>
             </div>
 
-            <div className="activity-lines">
-              {dateRangeStats.rangeTransactions > 0 && (
-                <>
-                  <div className="activity-line">
-                    <div className="line-label">Seçili Dönem Kazanç</div>
-                    <div className="line-bar">
-                      <div className="line-fill" style={{ width: dateRangeStats.rangeProfit > 0 ? `${Math.min(dateRangeStats.rangeProfit * 2, 100)}%` : '0%', backgroundColor: dateRangeStats.rangeProfit > 0 ? '#22c55e' : '#6b7280' }}></div>
-                    </div>
-                    <div className={`line-value ${dateRangeStats.rangeProfit > 0 ? 'profit-text' : ''}`}>{dateRangeStats.rangeProfit > 0 ? dateRangeStats.rangeProfit.toFixed(1) : '-'}</div>
-                  </div>
-                  {dateRangeStats.rangeLoss > 0 && (
-                    <div className="activity-line">
-                      <div className="line-label">Seçili Dönem Zarar</div>
-                      <div className="line-bar">
-                        <div className="line-fill" style={{ width: `${Math.min(dateRangeStats.rangeLoss * 2, 100)}%`, backgroundColor: '#ef4444' }}></div>
-                      </div>
-                      <div className="line-value loss-text">{dateRangeStats.rangeLoss.toFixed(1)}</div>
-                    </div>
-                  )}
-                </>
-              )}
-              <div className="activity-line">
-                <div className="line-label">Gönderilen İrade</div>
-                <div className="line-bar">
-                  <div className="line-fill" style={{ width: totalIrade > 0 ? `${Math.min(totalIrade * 2, 100)}%` : '0%', backgroundColor: '#3b82f6' }}></div>
-                </div>
-                <div className="line-value">{totalIrade > 0 ? totalIrade.toFixed(1) : '-'}</div>
-              </div>
-              <div className="activity-line">
-                <div className="line-label">{t.activeAccounts}</div>
-                <div className="line-bar">
-                  <div className="line-fill" style={{ width: totalCustomers > 0 ? `${Math.min(totalCustomers * 10, 100)}%` : '0%' }}></div>
-                </div>
-                <div className="line-value">{totalCustomers}</div>
-              </div>
-            </div>
-
             {/* Tarih Aralığı İşlemleri */}
             {dateRangeTransactions.length > 0 && (
               <div className="today-transactions-container">
@@ -2856,73 +2748,6 @@ function App() {
                     </thead>
                     <tbody>
                       {dateRangeTransactions.map((transaction) => (
-                        <tr key={transaction.id}>
-                          <td className="readonly-cell">
-                            <span className="cell-value">{transaction.id}</span>
-                          </td>
-                          <td className="readonly-cell">
-                            <span className="cell-value">{transaction.date}</span>
-                          </td>
-                          <td className="readonly-cell">
-                            <span className="cell-value">{transaction.sender || '-'}</span>
-                          </td>
-                          <td className="readonly-cell">
-                            <span className="cell-value">{transaction.senderCurrency || '-'}</span>
-                          </td>
-                          <td className="readonly-cell">
-                            <span className="cell-value">{transaction.amount || '-'}</span>
-                          </td>
-                          <td className="readonly-cell">
-                            <span className="cell-value">{transaction.receiver || '-'}</span>
-                          </td>
-                          <td className="readonly-cell">
-                            <span className="cell-value">{transaction.receiverCurrency || '-'}</span>
-                          </td>
-                          <td className="readonly-cell">
-                            <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
-                          </td>
-                          <td className="readonly-cell">
-                            <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
-                              {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
-                            </span>
-                          </td>
-                          <td className="readonly-cell">
-                            <span className="cell-value">
-                              {transaction.status === 'pending' ? t.pending :
-                               transaction.status === 'completed' ? t.completed :
-                               transaction.status === 'cancelled' ? t.cancelled : transaction.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Günlük Eklenen Satırlar */}
-            {todayTransactions.length > 0 && (
-              <div className="today-transactions-container">
-                <h3>{t.todayTransactions}</h3>
-                <div className="table-container daily-table">
-                  <table className="excel-table compact-table">
-                    <thead>
-                      <tr>
-                        <th data-column="id">{t.id}</th>
-                        <th data-column="date">{t.date}</th>
-                        <th data-column="sender">{t.sender}</th>
-                        <th data-column="senderCurrency">{t.senderCurrency}</th>
-                        <th data-column="amount">{t.amount}</th>
-                        <th data-column="receiver">{t.receiver}</th>
-                        <th data-column="receiverCurrency">{t.receiverCurrency}</th>
-                        <th data-column="deliveryAmount">{t.deliveryAmount}</th>
-                        <th data-column="profitLoss">{t.profitLoss}</th>
-                        <th data-column="status">{t.status}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {todayTransactions.map((transaction) => (
                         <tr key={transaction.id}>
                           <td className="readonly-cell">
                             <span className="cell-value">{transaction.id}</span>
@@ -3408,11 +3233,6 @@ function App() {
                           <th data-column="note">
                             {t.note}
                           </th>
-                          {customColumns.map(column => (
-                            <th key={column.id} data-column={column.id}>
-                              {column.name}
-                            </th>
-                          ))}
                           <th data-column="status">
                             {t.status}
                           </th>
@@ -3441,7 +3261,10 @@ function App() {
                             <td className="readonly-cell">
                               <span className="cell-value">{transaction.receiver || '-'}</span>
                             </td>
-                            <td className="readonly-cell" colSpan={8}>
+                            <td className="readonly-cell">
+                              <span className="cell-value">{transaction.note || '-'}</span>
+                            </td>
+                            <td className="readonly-cell" colSpan={6}>
                               <button
                                 className="table-action-button delete-button"
                                 onClick={() => handleDeleteTransaction(transaction.id)}
@@ -3575,22 +3398,6 @@ function App() {
                                 <span className="cell-value">{transaction.note || '-'}</span>
                               )}
                             </td>
-                            {customColumns.map(column => (
-                              <td key={column.id}>
-                                {editingRowId === transaction.id ? (
-                                  <input
-                                    type={column.type === 'number' ? 'number' : 'text'}
-                                    value={transaction[column.id] || (column.type === 'number' ? 0 : '')}
-                                    onChange={(e) => handleUpdateTransaction(transaction.id, column.id, column.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
-                                    className="table-input"
-                                  />
-                                ) : (
-                                  <span className="cell-value">
-                                    {column.type === 'number' ? transaction[column.id] || 0 : transaction[column.id] || '-'}
-                                  </span>
-                                )}
-                              </td>
-                            ))}
                             <td>
                               {editingRowId === transaction.id ? (
                                 <select
@@ -3912,9 +3719,9 @@ function App() {
                       senderRate: 1,
                       receiverRate: 1,
                       date: new Date().toISOString().split('T')[0],
-                      sender: toCustomer.name, // Alıcı müşteri olarak kaydet ki tablosunda görünsün
+                      sender: fromCustomerName, // Gönderici kişi
                       amount: amount.toString(),
-                      receiver: fromCustomerName, // Gönderici kişi
+                      receiver: toCustomer.name, // Alıcı müşteri
                       deliveryAmount: amount.toString(),
                       profitLoss: 0, // Zarar olarak geçmesin
                       description: 'İrade',
