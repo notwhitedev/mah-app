@@ -126,6 +126,53 @@ body {
   transform: translateY(0);
 }
 
+/* Font size buttons */
+.font-size-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.font-size-button {
+  flex: 1;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #1f2937;
+}
+
+.font-size-button:hover {
+  background: #f8fafc;
+  border-color: #0ea5e9;
+}
+
+.font-size-button.active {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+.dark-mode .font-size-button {
+  background: #2a2a3a;
+  border-color: #3a3a4a;
+  color: #ffffff;
+}
+
+.dark-mode .font-size-button:hover {
+  background: #3a3a4a;
+  border-color: #0ea5e9;
+}
+
+.dark-mode .font-size-button.active {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
 /* Dark mode for date range container */
 .dark-mode .date-range-container {
   background: #1a1a24;
@@ -152,11 +199,10 @@ body {
   background: #3a3a4a;
 }
 
-/* Arabic font weight improvements */
+/* Arabic font weight improvements (separate from main font size) */
 .app.rtl,
 .app.rtl * {
   font-weight: 600 !important;
-  font-size: 0.95em !important;
 }
 
 .app.rtl h1,
@@ -174,6 +220,30 @@ body {
 .app.rtl .cell-value,
 .app.rtl .line-value {
   font-weight: 700 !important;
+}
+.dark-mode .date-range-container {
+  background: #1a1a24;
+  border-color: #2a2a3a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .date-range-container h3 {
+  color: #ffffff;
+}
+
+.dark-mode .date-range-input label {
+  color: #9ca3af;
+}
+
+.dark-mode .date-input {
+  background: #2a2a3a;
+  border-color: #3a3a4a;
+  color: #ffffff;
+}
+
+.dark-mode .date-input:focus {
+  border-color: #0ea5e9;
+  background: #3a3a4a;
 }
 
 .app {

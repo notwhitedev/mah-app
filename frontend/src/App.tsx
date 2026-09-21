@@ -124,6 +124,11 @@ function App() {
   const [exportEndDate, setExportEndDate] = useState('')
   const [dateRangeStartDate, setDateRangeStartDate] = useState('')
   const [dateRangeEndDate, setDateRangeEndDate] = useState('')
+  const [fontSize, setFontSize] = useState(() => {
+    if (typeof window === 'undefined') return 16
+    const savedFontSize = localStorage.getItem('app_font_size')
+    return savedFontSize ? parseInt(savedFontSize) : 16
+  })
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null)
   const [allUsers, setAllUsers] = useState<UserAccount[]>([])
   const [employeeActivities, setEmployeeActivities] = useState<Record<string, EmployeeActivityLog[]>>({})
@@ -302,7 +307,11 @@ function App() {
       searchCustomer: 'Müşteri Ara',
       dateRange: 'Tarih Aralığı',
       exportDateRangePDF: 'Tarih Aralığı PDF İndir',
-      noDateRangeTransactions: 'Bu tarih aralığında işlem yok'
+      noDateRangeTransactions: 'Bu tarih aralığında işlem yok',
+      fontSize: 'Yazı Boyutu',
+      small: 'Küçük',
+      medium: 'Orta',
+      large: 'Büyük'
     },
     en: {
       appTitle: 'Flash',
@@ -343,6 +352,7 @@ function App() {
       totalLoss: 'Total Loss',
       thisMonthActivity: 'This Month Activity',
       activeAccounts: 'Active Accounts',
+      noDateRangeTransactions: 'No transactions in this date range',
       transactions: 'Transactions',
       deleteCustomer: 'Delete Customer',
       sender: 'Sender',
@@ -447,7 +457,10 @@ function App() {
       searchCustomer: 'Search Customer',
       dateRange: 'Date Range',
       exportDateRangePDF: 'Export Date Range PDF',
-      noDateRangeTransactions: 'No transactions in this date range'
+      fontSize: 'Font Size',
+      small: 'Small',
+      medium: 'Medium',
+      large: 'Large'
     },
     ar: {
       appTitle: 'فلاش',
@@ -592,7 +605,11 @@ function App() {
       searchCustomer: 'بحث عن العميل',
       dateRange: 'نطاق التاريخ',
       exportDateRangePDF: 'تصدير PDF نطاق التاريخ',
-      noDateRangeTransactions: 'لا توجد معاملات في هذا النطاق الزمني'
+      noDateRangeTransactions: 'لا توجد معاملات في هذا النطاق الزمني',
+      fontSize: 'حجم الخط',
+      small: 'صغير',
+      medium: 'متوسط',
+      large: 'كبير'
     }
   }
 
@@ -1099,6 +1116,11 @@ function App() {
       setSidebarCollapsed(JSON.parse(savedSidebarCollapsed))
     }
 
+    const savedFontSize = localStorage.getItem('app_font_size')
+    if (savedFontSize) {
+      setFontSize(parseInt(savedFontSize))
+    }
+
     const savedLanguage = localStorage.getItem('language') as 'tr' | 'en' | 'ar' | null
     if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
       setLanguage(savedLanguage)
@@ -1118,6 +1140,12 @@ function App() {
 
     loadUsers()
   }, [])
+
+  // Font size değişince localStorage'a kaydet ve uygula
+  useEffect(() => {
+    localStorage.setItem('app_font_size', fontSize.toString())
+    document.documentElement.style.fontSize = `${fontSize}px`
+  }, [fontSize])
 
   useEffect(() => {
     if (!currentUser) {
@@ -3724,6 +3752,30 @@ function App() {
                     onClick={() => setLanguage('ar')}
                   >
                     {t.arabic}
+                  </button>
+                </div>
+              </div>
+              
+              <div className="settings-item">
+                <label>{t.fontSize}</label>
+                <div className="font-size-buttons">
+                  <button 
+                    className={`font-size-button ${fontSize === 14 ? 'active' : ''}`}
+                    onClick={() => setFontSize(14)}
+                  >
+                    {t.small}
+                  </button>
+                  <button 
+                    className={`font-size-button ${fontSize === 16 ? 'active' : ''}`}
+                    onClick={() => setFontSize(16)}
+                  >
+                    {t.medium}
+                  </button>
+                  <button 
+                    className={`font-size-button ${fontSize === 18 ? 'active' : ''}`}
+                    onClick={() => setFontSize(18)}
+                  >
+                    {t.large}
                   </button>
                 </div>
               </div>
