@@ -3443,10 +3443,11 @@ function App() {
                             </td>
                             <td className="readonly-cell" colSpan={8}>
                               <button
-                                className="delete-button"
+                                className="table-action-button delete-button"
                                 onClick={() => handleDeleteTransaction(transaction.id)}
+                                title={t.deleteButton}
                               >
-                                {t.deleteButton}
+                                <span>H</span>
                               </button>
                             </td>
                           </tr>
