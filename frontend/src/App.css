@@ -3304,6 +3304,82 @@ body.dark-mode .user-edit-row input {
     flex-wrap: wrap;
   }
 
+.stats-chart-container {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(14, 165, 233, 0.15);
+}
+
+.stats-chart-container h3 {
+  margin-bottom: 20px;
+  color: #1f2937;
+  font-size: 1.1em;
+}
+
+.chart-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.chart-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.chart-label {
+  min-width: 150px;
+  font-size: 0.9em;
+  color: #6b7280;
+}
+
+.chart-bar-fill {
+  height: 30px;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+  min-width: 10px;
+}
+
+.profit-fill {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.loss-fill {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.irade-fill {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.chart-value {
+  min-width: 80px;
+  text-align: right;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+body.dark-mode .stats-chart-container {
+  background: rgba(26, 41, 45, 0.8);
+  border-color: rgba(94, 234, 212, 0.13);
+}
+
+body.dark-mode .stats-chart-container h3 {
+  color: #e5f3f1;
+}
+
+body.dark-mode .chart-label {
+  color: #9ca3af;
+}
+
+body.dark-mode .chart-value {
+  color: #e5f3f1;
+}
+
+@media (max-width: 700px) {
   .submit-button,
   .toggle-button,
   .action-button {

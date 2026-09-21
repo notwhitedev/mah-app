@@ -76,6 +76,15 @@ interface EmployeeActivityLog {
   timestamp: string
 }
 
+interface Irade {
+  id: string
+  amount: number
+  customerId: string
+  customerName: string
+  date: string
+  note: string
+}
+
 function App() {
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window === 'undefined') return 'login'
@@ -129,6 +138,21 @@ function App() {
     const savedFontSize = localStorage.getItem('app_font_size')
     return savedFontSize ? parseInt(savedFontSize) : 16
   })
+  const [showIradeModal, setShowIradeModal] = useState(false)
+  const [iradeAmount, setIradeAmount] = useState('')
+  const [iradeCustomer, setIradeCustomer] = useState('')
+  const [irades, setIrades] = useState<Irade[]>([])
+  const [statsDateRange, setStatsDateRange] = useState<'day' | 'week' | 'month' | 'year'>('day')
+  const [statsStartDate, setStatsStartDate] = useState('')
+  const [statsEndDate, setStatsEndDate] = useState('')
+
+  // İlk yüklemede tarih aralığını ayarla
+  useEffect(() => {
+    const today = new Date()
+    const todayStr = today.toISOString().split('T')[0]
+    setDateRangeStartDate(todayStr)
+    setDateRangeEndDate(todayStr)
+  }, [])
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null)
   const [allUsers, setAllUsers] = useState<UserAccount[]>([])
   const [employeeActivities, setEmployeeActivities] = useState<Record<string, EmployeeActivityLog[]>>({})
@@ -185,7 +209,7 @@ function App() {
       managePermissions: 'İzinleri Yönet',
       totalTransactions: 'Toplam İşlem',
       activeCustomers: 'Aktif Müşteri',
-      totalLoss: 'Toplam Zarar',
+      totalLoss: 'İradeler',
       thisMonthActivity: 'Bu Ay Hareket',
       activeAccounts: 'Aktif Hesaplar',
       transactions: 'İşlemler',
@@ -311,7 +335,20 @@ function App() {
       fontSize: 'Yazı Boyutu',
       small: 'Küçük',
       medium: 'Orta',
-      large: 'Büyük'
+      large: 'Büyük',
+      irade: 'İrade',
+      addIrade: 'İrade Ekle',
+      iradeAmount: 'İrade Tutarı',
+      iradeNote: 'Gönderici {sender} alıcı {receiver} hesabına {amount} irade yatırdı',
+      totalIrade: 'Toplam İrade',
+      statsPeriod: 'İstatistik Dönemi',
+      day: 'Gün',
+      week: 'Hafta',
+      month: 'Ay',
+      year: 'Yıl',
+      custom: 'Özel',
+      exportStatsPDF: 'İstatistik PDF İndir',
+      noStatsData: 'Bu dönemde veri yok'
     },
     en: {
       appTitle: 'Flash',
@@ -349,7 +386,7 @@ function App() {
       totalProfit: 'Total Profit',
       totalTransactions: 'Total Transactions',
       activeCustomers: 'Active Customers',
-      totalLoss: 'Total Loss',
+      totalLoss: 'Commissions',
       thisMonthActivity: 'This Month Activity',
       activeAccounts: 'Active Accounts',
       noDateRangeTransactions: 'No transactions in this date range',
@@ -460,7 +497,20 @@ function App() {
       fontSize: 'Font Size',
       small: 'Small',
       medium: 'Medium',
-      large: 'Large'
+      large: 'Large',
+      irade: 'Commission',
+      addIrade: 'Add Commission',
+      iradeAmount: 'Commission Amount',
+      iradeNote: 'Sender {sender} deposited {amount} commission to receiver {receiver} account',
+      totalIrade: 'Total Commission',
+      statsPeriod: 'Statistics Period',
+      day: 'Day',
+      week: 'Week',
+      month: 'Month',
+      year: 'Year',
+      custom: 'Custom',
+      exportStatsPDF: 'Export Statistics PDF',
+      noStatsData: 'No data for this period'
     },
     ar: {
       appTitle: 'فلاش',
@@ -498,7 +548,7 @@ function App() {
       totalProfit: 'إجمالي الربح',
       totalTransactions: 'إجمالي المعاملات',
       activeCustomers: 'العملاء النشطين',
-      totalLoss: 'إجمالي الخسارة',
+      totalLoss: 'العمولات',
       thisMonthActivity: 'نشاط هذا الشهر',
       activeAccounts: 'الحسابات النشطة',
       transactions: 'المعاملات',
@@ -609,7 +659,20 @@ function App() {
       fontSize: 'حجم الخط',
       small: 'صغير',
       medium: 'متوسط',
-      large: 'كبير'
+      large: 'كبير',
+      irade: 'العمولة',
+      addIrade: 'إضافة عمولة',
+      iradeAmount: 'مبلغ العمولة',
+      iradeNote: 'أودع المرسل {sender} مبلغ {amount} عمولة في حساب المستلم {receiver}',
+      totalIrade: 'إجمالي العمولات',
+      statsPeriod: 'فترة الإحصائيات',
+      day: 'يوم',
+      week: 'أسبوع',
+      month: 'شهر',
+      year: 'سنة',
+      custom: 'مخصص',
+      exportStatsPDF: 'تصدير PDF الإحصائيات',
+      noStatsData: 'لا توجد بيانات لهذه الفترة'
     }
   }
 
@@ -2323,6 +2386,18 @@ function App() {
 
   const stats = calculateTotalStats()
 
+  // İradeler hesaplama fonksiyonu
+  const calculateTotalIrade = () => {
+    let totalIrade = 0
+    irades.forEach(irade => {
+      totalIrade += irade.amount
+    })
+    return totalIrade
+  }
+
+  const totalIrade = calculateTotalIrade()
+  const netProfit = stats.totalProfit - stats.totalLoss - totalIrade
+
   // Tarih aralığındaki işlemleri hesapla
   const getDateRangeTransactions = () => {
     if (!dateRangeStartDate || !dateRangeEndDate) return []
@@ -2611,7 +2686,7 @@ function App() {
                   <p className="stat-value">{totalCustomers > 0 ? totalCustomers : '-'}</p>
                 </div>
               </div>
-              <div className="stat-card">
+              <div className="stat-card" onClick={() => setShowIradeModal(true)} style={{ cursor: 'pointer' }}>
                 <div className="stat-icon">
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
@@ -2620,7 +2695,9 @@ function App() {
                 </div>
                 <div className="stat-info">
                   <p className="stat-label">{t.totalLoss}</p>
-                  <p className={`stat-value ${stats.totalLoss > 0 ? 'loss-text' : ''}`}>{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '0'}</p>
+                  <p className={`stat-value ${netProfit > 0 ? 'profit-text' : netProfit < 0 ? 'loss-text' : ''}`}>
+                    {netProfit !== 0 ? netProfit.toFixed(1) : '0'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -2643,9 +2720,16 @@ function App() {
               <div className="activity-line">
                 <div className="line-label">{t.totalLoss}</div>
                 <div className="line-bar">
-                  <div className="line-fill" style={{ width: stats.totalLoss > 0 ? `${Math.min(stats.totalLoss * 2, 100)}%` : '0%' }}></div>
+                  <div className="line-fill" style={{ width: totalIrade > 0 ? `${Math.min(totalIrade * 2, 100)}%` : '0%' }}></div>
                 </div>
-                <div className={`line-value ${stats.totalLoss > 0 ? 'loss-text' : ''}`}>{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '-'}</div>
+                <div className={`line-value ${totalIrade > 0 ? 'profit-text' : ''}`}>{totalIrade > 0 ? totalIrade.toFixed(1) : '-'}</div>
+              </div>
+              <div className="activity-line">
+                <div className="line-label">Net Kazanç</div>
+                <div className="line-bar">
+                  <div className="line-fill" style={{ width: Math.abs(netProfit) > 0 ? `${Math.min(Math.abs(netProfit) * 2, 100)}%` : '0%', backgroundColor: netProfit > 0 ? '#22c55e' : netProfit < 0 ? '#ef4444' : '#6b7280' }}></div>
+                </div>
+                <div className={`line-value ${netProfit > 0 ? 'profit-text' : netProfit < 0 ? 'loss-text' : ''}`}>{netProfit !== 0 ? netProfit.toFixed(1) : '-'}</div>
               </div>
               <div className="activity-line">
                 <div className="line-label">{t.activeAccounts}</div>
@@ -2660,6 +2744,49 @@ function App() {
             <div className="date-range-container">
               <h3>{t.dateRange}</h3>
               <div className="date-range-inputs">
+                <div className="date-range-input">
+                  <label>{t.statsPeriod}</label>
+                  <select
+                    value={statsDateRange}
+                    onChange={(e) => {
+                      const range = e.target.value as 'day' | 'week' | 'month' | 'year'
+                      setStatsDateRange(range)
+                      const today = new Date()
+                      let startDate = ''
+                      let endDate = today.toISOString().split('T')[0]
+
+                      switch (range) {
+                        case 'day':
+                          startDate = endDate
+                          break
+                        case 'week':
+                          const weekAgo = new Date(today)
+                          weekAgo.setDate(today.getDate() - 7)
+                          startDate = weekAgo.toISOString().split('T')[0]
+                          break
+                        case 'month':
+                          const monthAgo = new Date(today)
+                          monthAgo.setMonth(today.getMonth() - 1)
+                          startDate = monthAgo.toISOString().split('T')[0]
+                          break
+                        case 'year':
+                          const yearAgo = new Date(today)
+                          yearAgo.setFullYear(today.getFullYear() - 1)
+                          startDate = yearAgo.toISOString().split('T')[0]
+                          break
+                      }
+
+                      setDateRangeStartDate(startDate)
+                      setDateRangeEndDate(endDate)
+                    }}
+                    className="date-input"
+                  >
+                    <option value="day">{t.day}</option>
+                    <option value="week">{t.week}</option>
+                    <option value="month">{t.month}</option>
+                    <option value="year">{t.year}</option>
+                  </select>
+                </div>
                 <div className="date-range-input">
                   <label>{t.startDate}</label>
                   <input
@@ -2688,6 +2815,35 @@ function App() {
                 )}
               </div>
             </div>
+
+            {/* İstatistik Grafikleri */}
+            {dateRangeTransactions.length > 0 && (
+              <div className="stats-chart-container">
+                <h3>{t.statsPeriod}</h3>
+                <div className="chart-bars">
+                  <div className="chart-bar">
+                    <div className="chart-label">{t.totalProfit}</div>
+                    <div className="chart-bar-fill profit-fill" style={{ width: `${Math.min(stats.totalProfit * 5, 100)}%` }}></div>
+                    <div className="chart-value">{stats.totalProfit.toFixed(1)}</div>
+                  </div>
+                  <div className="chart-bar">
+                    <div className="chart-label">{t.totalLoss}</div>
+                    <div className="chart-bar-fill loss-fill" style={{ width: `${Math.min(stats.totalLoss * 5, 100)}%` }}></div>
+                    <div className="chart-value">{stats.totalLoss.toFixed(1)}</div>
+                  </div>
+                  <div className="chart-bar">
+                    <div className="chart-label">{t.totalLoss} (İradeler)</div>
+                    <div className="chart-bar-fill irade-fill" style={{ width: `${Math.min(totalIrade * 5, 100)}%` }}></div>
+                    <div className="chart-value">{totalIrade.toFixed(1)}</div>
+                  </div>
+                  <div className="chart-bar">
+                    <div className="chart-label">Net Kazanç</div>
+                    <div className="chart-bar-fill" style={{ width: `${Math.min(Math.abs(netProfit) * 5, 100)}%`, backgroundColor: netProfit > 0 ? '#22c55e' : netProfit < 0 ? '#ef4444' : '#6b7280' }}></div>
+                    <div className="chart-value">{netProfit.toFixed(1)}</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Tarih Aralığı İşlemleri */}
             {dateRangeTransactions.length > 0 && (
@@ -3643,6 +3799,121 @@ function App() {
                   onClick={handleSaveTransactionFromModal}
                 >
                   {t.submit}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* İrade Modal */}
+      {showIradeModal && (
+        <div className="modal-overlay" onClick={() => setShowIradeModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>{t.addIrade}</h3>
+            <div className="modal-form">
+              <div className="form-group">
+                <label>{t.iradeAmount}</label>
+                <input
+                  type="number"
+                  id="iradeAmount"
+                  placeholder="100"
+                  className="modal-input"
+                  value={iradeAmount}
+                  onChange={(e) => setIradeAmount(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label>{t.selectCustomer}</label>
+                <select
+                  id="iradeCustomer"
+                  className="modal-select"
+                  value={iradeCustomer}
+                  onChange={(e) => setIradeCustomer(e.target.value)}
+                >
+                  <option value="">{t.selectCustomer}</option>
+                  {customers.map(customer => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="modal-actions">
+                <button className="modal-button cancel" onClick={() => setShowIradeModal(false)}>
+                  {t.cancelButton}
+                </button>
+                <button
+                  className="modal-button confirm"
+                  onClick={() => {
+                    const amountInput = document.getElementById('iradeAmount') as HTMLInputElement
+                    const customerSelect = document.getElementById('iradeCustomer') as HTMLSelectElement
+                    const amount = parseFloat(amountInput.value)
+                    const customerId = customerSelect.value
+
+                    if (isNaN(amount) || amount <= 0) {
+                      alert('Lütfen geçerli bir tutar girin')
+                      return
+                    }
+
+                    if (!customerId) {
+                      alert('Lütfen bir müşteri seçin')
+                      return
+                    }
+
+                    const customer = customers.find(c => c.id === customerId)
+                    if (!customer) return
+
+                    const newIrade: Irade = {
+                      id: Date.now().toString(),
+                      amount,
+                      customerId,
+                      customerName: customer.name,
+                      date: new Date().toISOString().split('T')[0],
+                      note: t.iradeNote.replace('{sender}', 'Sistem').replace('{receiver}', customer.name).replace('{amount}', amount.toString())
+                    }
+
+                    setIrades([...irades, newIrade])
+
+                    // Müşterinin işlemlerine irade satırı ekle
+                    const iradeTransaction: Transaction = {
+                      id: Date.now().toString(),
+                      customerId: customer.id,
+                      customerName: customer.name,
+                      currency: 'USD',
+                      senderCurrency: 'USD',
+                      receiverCurrency: 'USD',
+                      senderRate: 1,
+                      receiverRate: 1,
+                      date: new Date().toISOString().split('T')[0],
+                      sender: 'Sistem',
+                      amount: amount.toString(),
+                      receiver: customer.name,
+                      deliveryAmount: amount.toString(),
+                      profitLoss: -amount,
+                      description: 'İrade',
+                      status: 'completed',
+                      note: newIrade.note
+                    }
+
+                    const updatedCustomers = customers.map(c => {
+                      if (c.id === customerId) {
+                        return {
+                          ...c,
+                          transactions: [...(c.transactions || []), iradeTransaction]
+                        }
+                      }
+                      return c
+                    })
+
+                    setCustomers(updatedCustomers)
+                    setIradeAmount('')
+                    setIradeCustomer('')
+                    setShowIradeModal(false)
+                    showToast('İrade başarıyla eklendi', 'success')
+                  }}
+                >
+                  {t.addButton}
                 </button>
               </div>
             </div>
