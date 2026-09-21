@@ -2216,44 +2216,61 @@ function App() {
       return
     }
 
+    // Tüm müşterilerde işlemi bul
+    let targetCustomer: any = null
+    let targetTransaction: any = null
+
+    customers.forEach((customer: any) => {
+      const transaction = (customer.transactions || []).find((t: any) => t.id === transactionId)
+      if (transaction) {
+        targetCustomer = customer
+        targetTransaction = transaction
+      }
+    })
+
+    if (!targetCustomer || !targetTransaction) {
+      alert('İşlem bulunamadı')
+      return
+    }
+
     // Eğer silinen işlem bir irade ise, iradeler listesinden de sil
-    const transactionToDelete = transactions.find(t => t.id === transactionId)
-    if (transactionToDelete?.isIrade && transactionToDelete.iradeId) {
-      setIrades(irades.filter(irade => irade.id !== transactionToDelete.iradeId))
+    if (targetTransaction.isIrade && targetTransaction.iradeId) {
+      setIrades(irades.filter((irade: any) => irade.id !== targetTransaction.iradeId))
     }
 
     if (window.confirm(t.confirmDeleteTransaction)) {
-      const updatedTransactions = transactions.filter(t => t.id !== transactionId)
-      setTransactions(updatedTransactions)
-
       // İşlemi müşteriden sil
-      if (selectedCustomer) {
-        const updatedCustomer = {
-          ...selectedCustomer,
-          transactions: updatedTransactions
-        }
-        const finalCustomer = updateCustomerStats(updatedCustomer)
-        setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
+      const updatedTransactions = (targetCustomer.transactions || []).filter((t: any) => t.id !== transactionId)
+      const updatedCustomer: any = {
+        ...targetCustomer,
+        transactions: updatedTransactions
+      }
+      const finalCustomer = updateCustomerStats(updatedCustomer)
+      setCustomers(customers.map((c: any) => c.id === targetCustomer!.id ? finalCustomer : c))
+
+      if (selectedCustomer && selectedCustomer.id === targetCustomer.id) {
         setSelectedCustomer(finalCustomer)
-        try {
-          const response = await fetch(`${API_URL}/api/customers/${selectedCustomer.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(finalCustomer)
-          })
-          if (!response.ok) throw new Error('Transaction delete failed')
-        } catch {
-          setErrorMessage(language === 'tr' ? 'Satır silme işlemi buluta kaydedilemedi.' : language === 'en' ? 'Row deletion could not be saved to the cloud.' : 'تعذر حفظ حذف السطر في السحابة.')
-        }
-        if (currentUser) {
-          const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
-          const text = language === 'tr'
-            ? `${userName} "${selectedCustomer.name}" müşterisinin satırını sildi.`
-            : language === 'en'
-              ? `${userName} deleted a row from customer "${selectedCustomer.name}" account.`
-              : `${userName} حذف سطرًا من حساب العميل "${selectedCustomer.name}".`
-          addEmployeeActivity(currentUser.id, text)
-        }
+        setTransactions(updatedTransactions)
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/api/customers/${targetCustomer.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(finalCustomer)
+        })
+        if (!response.ok) throw new Error('Transaction delete failed')
+      } catch {
+        setErrorMessage(language === 'tr' ? 'Satır silme işlemi buluta kaydedilemedi.' : language === 'en' ? 'Row deletion could not be saved to the cloud.' : 'تعذر حفظ حذف السطر في السحابة.')
+      }
+      if (currentUser) {
+        const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
+        const text = language === 'tr'
+          ? `${userName} "${targetCustomer.name}" müşterisinin satırını sildi.`
+          : language === 'en'
+            ? `${userName} deleted a row from customer "${targetCustomer.name}" account.`
+            : `${userName} حذف سطرًا من حساب العميل "${targetCustomer.name}".`
+        addEmployeeActivity(currentUser.id, text)
       }
     }
   }
@@ -3406,7 +3423,7 @@ function App() {
                       </thead>
                       <tbody>
                         {/* İrade Satırları */}
-                        {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name && t.isIrade).map((transaction) => (
+                        {(selectedCustomer?.transactions || []).filter(t => t.isIrade).map((transaction) => (
                           <tr key={transaction.id} className="irade-row">
                             <td className="readonly-cell">{transaction.id}</td>
                             <td className="readonly-cell">
@@ -3436,7 +3453,7 @@ function App() {
                         ))}
 
                         {/* Normal İşlem Satırları */}
-                        {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name && !t.isIrade).map((transaction) => (
+                        {(selectedCustomer?.transactions || []).filter(t => !t.isIrade).map((transaction) => (
                           <tr key={transaction.id} className={editingRowId === transaction.id ? 'editing-row' : ''}>
                             <td className="readonly-cell">{transaction.id}</td>
                             <td className="readonly-cell">
@@ -3894,9 +3911,9 @@ function App() {
                       senderRate: 1,
                       receiverRate: 1,
                       date: new Date().toISOString().split('T')[0],
-                      sender: fromCustomerName,
+                      sender: toCustomer.name, // Alıcı müşteri olarak kaydet ki tablosunda görünsün
                       amount: amount.toString(),
-                      receiver: toCustomer.name,
+                      receiver: fromCustomerName, // Gönderici kişi
                       deliveryAmount: amount.toString(),
                       profitLoss: 0, // Zarar olarak geçmesin
                       description: 'İrade',
