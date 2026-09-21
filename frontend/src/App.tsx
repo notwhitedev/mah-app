@@ -143,8 +143,6 @@ function App() {
   const [iradeCustomer, setIradeCustomer] = useState('')
   const [irades, setIrades] = useState<Irade[]>([])
   const [statsDateRange, setStatsDateRange] = useState<'day' | 'week' | 'month' | 'year'>('day')
-  const [statsStartDate, setStatsStartDate] = useState('')
-  const [statsEndDate, setStatsEndDate] = useState('')
 
   // İlk yüklemede tarih aralığını ayarla
   useEffect(() => {
