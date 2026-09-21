@@ -144,7 +144,6 @@ function App() {
   })
   const [showIradeModal, setShowIradeModal] = useState(false)
   const [iradeAmount, setIradeAmount] = useState('')
-  const [iradeFromCustomer, setIradeFromCustomer] = useState('')
   const [iradeToCustomer, setIradeToCustomer] = useState('')
   const [irades, setIrades] = useState<Irade[]>([])
 
@@ -2406,40 +2405,42 @@ function App() {
   const totalIrade = calculateTotalIrade()
   const netProfit = stats.totalProfit - stats.totalLoss
 
-  // Dönem bazlı istatistik hesaplama
-  const calculatePeriodStats = (days: number) => {
-    const cutoffDate = new Date()
-    cutoffDate.setDate(cutoffDate.getDate() - days)
+  // Tarih aralığı bazlı istatistik hesaplama
+  const calculateDateRangeStats = () => {
+    if (!dateRangeStartDate || !dateRangeEndDate) {
+      return { rangeProfit: 0, rangeLoss: 0, rangeTransactions: 0 }
+    }
 
-    let periodProfit = 0
-    let periodLoss = 0
-    let periodTransactions = 0
+    const startDate = new Date(dateRangeStartDate)
+    const endDate = new Date(dateRangeEndDate)
+    endDate.setHours(23, 59, 59, 999)
+
+    let rangeProfit = 0
+    let rangeLoss = 0
+    let rangeTransactions = 0
 
     customers.forEach(customer => {
       (customer.transactions || []).forEach(t => {
-        if (t.status === 'cancelled') return
+        if (t.status === 'cancelled' || t.isIrade) return // İradeleri dahil etme
 
         const transactionDate = new Date(t.date)
-        if (transactionDate >= cutoffDate) {
-          periodTransactions++
+        if (transactionDate >= startDate && transactionDate <= endDate) {
+          rangeTransactions++
 
           const senderRate = t.senderRate || 1
           if (t.profitLoss > 0) {
-            periodProfit += t.profitLoss / senderRate
+            rangeProfit += t.profitLoss / senderRate
           } else if (t.profitLoss < 0) {
-            periodLoss += Math.abs(t.profitLoss) / senderRate
+            rangeLoss += Math.abs(t.profitLoss) / senderRate
           }
         }
       })
     })
 
-    return { periodProfit, periodLoss, periodTransactions }
+    return { rangeProfit, rangeLoss, rangeTransactions }
   }
 
-  const todayStats = calculatePeriodStats(1)
-  const weekStats = calculatePeriodStats(7)
-  const monthStats = calculatePeriodStats(30)
-  const yearStats = calculatePeriodStats(365)
+  const dateRangeStats = calculateDateRangeStats()
 
   // Tarih aralığındaki işlemleri hesapla
   const getDateRangeTransactions = () => {
@@ -2780,34 +2781,26 @@ function App() {
             </div>
 
             <div className="activity-lines">
-              <div className="activity-line">
-                <div className="line-label">Son Gün Kazanç</div>
-                <div className="line-bar">
-                  <div className="line-fill" style={{ width: todayStats.periodProfit > 0 ? `${Math.min(todayStats.periodProfit * 2, 100)}%` : '0%', backgroundColor: todayStats.periodProfit > 0 ? '#22c55e' : '#6b7280' }}></div>
-                </div>
-                <div className={`line-value ${todayStats.periodProfit > 0 ? 'profit-text' : ''}`}>{todayStats.periodProfit > 0 ? todayStats.periodProfit.toFixed(1) : '-'}</div>
-              </div>
-              <div className="activity-line">
-                <div className="line-label">Son Hafta Kazanç</div>
-                <div className="line-bar">
-                  <div className="line-fill" style={{ width: weekStats.periodProfit > 0 ? `${Math.min(weekStats.periodProfit * 2, 100)}%` : '0%', backgroundColor: weekStats.periodProfit > 0 ? '#22c55e' : '#6b7280' }}></div>
-                </div>
-                <div className={`line-value ${weekStats.periodProfit > 0 ? 'profit-text' : ''}`}>{weekStats.periodProfit > 0 ? weekStats.periodProfit.toFixed(1) : '-'}</div>
-              </div>
-              <div className="activity-line">
-                <div className="line-label">Son Ay Kazanç</div>
-                <div className="line-bar">
-                  <div className="line-fill" style={{ width: monthStats.periodProfit > 0 ? `${Math.min(monthStats.periodProfit * 2, 100)}%` : '0%', backgroundColor: monthStats.periodProfit > 0 ? '#22c55e' : '#6b7280' }}></div>
-                </div>
-                <div className={`line-value ${monthStats.periodProfit > 0 ? 'profit-text' : ''}`}>{monthStats.periodProfit > 0 ? monthStats.periodProfit.toFixed(1) : '-'}</div>
-              </div>
-              <div className="activity-line">
-                <div className="line-label">Son Yıl Kazanç</div>
-                <div className="line-bar">
-                  <div className="line-fill" style={{ width: yearStats.periodProfit > 0 ? `${Math.min(yearStats.periodProfit * 2, 100)}%` : '0%', backgroundColor: yearStats.periodProfit > 0 ? '#22c55e' : '#6b7280' }}></div>
-                </div>
-                <div className={`line-value ${yearStats.periodProfit > 0 ? 'profit-text' : ''}`}>{yearStats.periodProfit > 0 ? yearStats.periodProfit.toFixed(1) : '-'}</div>
-              </div>
+              {dateRangeStats.rangeTransactions > 0 && (
+                <>
+                  <div className="activity-line">
+                    <div className="line-label">Seçili Dönem Kazanç</div>
+                    <div className="line-bar">
+                      <div className="line-fill" style={{ width: dateRangeStats.rangeProfit > 0 ? `${Math.min(dateRangeStats.rangeProfit * 2, 100)}%` : '0%', backgroundColor: dateRangeStats.rangeProfit > 0 ? '#22c55e' : '#6b7280' }}></div>
+                    </div>
+                    <div className={`line-value ${dateRangeStats.rangeProfit > 0 ? 'profit-text' : ''}`}>{dateRangeStats.rangeProfit > 0 ? dateRangeStats.rangeProfit.toFixed(1) : '-'}</div>
+                  </div>
+                  {dateRangeStats.rangeLoss > 0 && (
+                    <div className="activity-line">
+                      <div className="line-label">Seçili Dönem Zarar</div>
+                      <div className="line-bar">
+                        <div className="line-fill" style={{ width: `${Math.min(dateRangeStats.rangeLoss * 2, 100)}%`, backgroundColor: '#ef4444' }}></div>
+                      </div>
+                      <div className="line-value loss-text">{dateRangeStats.rangeLoss.toFixed(1)}</div>
+                    </div>
+                  )}
+                </>
+              )}
               <div className="activity-line">
                 <div className="line-label">Gönderilen İrade</div>
                 <div className="line-bar">
@@ -3389,56 +3382,61 @@ function App() {
                           <th data-column="receiverCurrency">
                             {t.receiverCurrency}
                           </th>
+                          <th data-column="deliveryAmount">
+                            {t.deliveryAmount}
+                          </th>
+                          <th data-column="profitLoss">
+                            {t.profitLoss}
+                          </th>
                           <th data-column="note">
                             {t.note}
                           </th>
-                          <th data-column="actions" colSpan={customColumns.length + 3}>
+                          {customColumns.map(column => (
+                            <th key={column.id} data-column={column.id}>
+                              {column.name}
+                            </th>
+                          ))}
+                          <th data-column="status">
+                            {t.status}
+                          </th>
+                          <th data-column="actions">
                             {language === 'tr' ? 'İşlemler' : language === 'en' ? 'Actions' : 'إجراءات'}
                           </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name).map((transaction) => {
-                          // İrade satırları için özel gösterim
-                          if (transaction.isIrade) {
-                            return (
-                              <tr key={transaction.id} className="irade-row">
-                                <td className="readonly-cell">{transaction.id}</td>
-                                <td className="readonly-cell">
-                                  <span className="cell-value">{transaction.date}</span>
-                                </td>
-                                <td className="readonly-cell">
-                                  <span className="cell-value">{transaction.sender || '-'}</span>
-                                </td>
-                                <td className="readonly-cell">
-                                  <span className="cell-value">{transaction.senderCurrency || '-'}</span>
-                                </td>
-                                <td className="readonly-cell">
-                                  <span className="cell-value">{transaction.amount || '-'}</span>
-                                </td>
-                                <td className="readonly-cell">
-                                  <span className="cell-value">{transaction.receiver || '-'}</span>
-                                </td>
-                                <td className="readonly-cell">
-                                  <span className="cell-value">{transaction.receiverCurrency || '-'}</span>
-                                </td>
-                                <td className="readonly-cell">
-                                  <span className="cell-value">{transaction.note || '-'}</span>
-                                </td>
-                                <td className="readonly-cell" colSpan={customColumns.length + 3}>
-                                  <button
-                                    className="delete-button"
-                                    onClick={() => handleDeleteTransaction(transaction.id)}
-                                  >
-                                    {t.deleteButton}
-                                  </button>
-                                </td>
-                              </tr>
-                            )
-                          }
+                        {/* İrade Satırları */}
+                        {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name && t.isIrade).map((transaction) => (
+                          <tr key={transaction.id} className="irade-row">
+                            <td className="readonly-cell">{transaction.id}</td>
+                            <td className="readonly-cell">
+                              <span className="cell-value">{transaction.date}</span>
+                            </td>
+                            <td className="readonly-cell">
+                              <span className="cell-value">{transaction.sender || '-'}</span>
+                            </td>
+                            <td className="readonly-cell">
+                              <span className="cell-value">{transaction.senderCurrency || '-'}</span>
+                            </td>
+                            <td className="readonly-cell">
+                              <span className="cell-value">{transaction.amount || '-'}</span>
+                            </td>
+                            <td className="readonly-cell">
+                              <span className="cell-value">{transaction.receiver || '-'}</span>
+                            </td>
+                            <td className="readonly-cell" colSpan={8}>
+                              <button
+                                className="delete-button"
+                                onClick={() => handleDeleteTransaction(transaction.id)}
+                              >
+                                {t.deleteButton}
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
 
-                          // Normal işlemler
-                          return (
+                        {/* Normal İşlem Satırları */}
+                        {transactions.filter(t => selectedCustomer && t.sender === selectedCustomer.name && !t.isIrade).map((transaction) => (
                           <tr key={transaction.id} className={editingRowId === transaction.id ? 'editing-row' : ''}>
                             <td className="readonly-cell">{transaction.id}</td>
                             <td className="readonly-cell">
@@ -3534,6 +3532,23 @@ function App() {
                               {editingRowId === transaction.id ? (
                                 <input
                                   type="text"
+                                  value={transaction.deliveryAmount || ''}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'deliveryAmount', e.target.value)}
+                                  className="table-input"
+                                />
+                              ) : (
+                                <span className="cell-value">{transaction.deliveryAmount || '-'}</span>
+                              )}
+                            </td>
+                            <td className="readonly-cell">
+                              <span className={`cell-value ${transaction.profitLoss && transaction.profitLoss > 0 ? 'profit-text' : transaction.profitLoss && transaction.profitLoss < 0 ? 'loss-text' : ''}`}>
+                                {transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}
+                              </span>
+                            </td>
+                            <td>
+                              {editingRowId === transaction.id ? (
+                                <input
+                                  type="text"
                                   value={transaction.note || ''}
                                   onChange={(e) => handleUpdateTransaction(transaction.id, 'note', e.target.value)}
                                   className="table-input"
@@ -3542,7 +3557,42 @@ function App() {
                                 <span className="cell-value">{transaction.note || '-'}</span>
                               )}
                             </td>
-                            <td className="action-buttons-cell" colSpan={customColumns.length + 2}>
+                            {customColumns.map(column => (
+                              <td key={column.id}>
+                                {editingRowId === transaction.id ? (
+                                  <input
+                                    type={column.type === 'number' ? 'number' : 'text'}
+                                    value={transaction[column.id] || (column.type === 'number' ? 0 : '')}
+                                    onChange={(e) => handleUpdateTransaction(transaction.id, column.id, column.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
+                                    className="table-input"
+                                  />
+                                ) : (
+                                  <span className="cell-value">
+                                    {column.type === 'number' ? transaction[column.id] || 0 : transaction[column.id] || '-'}
+                                  </span>
+                                )}
+                              </td>
+                            ))}
+                            <td>
+                              {editingRowId === transaction.id ? (
+                                <select
+                                  value={transaction.status}
+                                  onChange={(e) => handleUpdateTransaction(transaction.id, 'status', e.target.value)}
+                                  className="table-select"
+                                >
+                                  <option value="pending">{t.pending}</option>
+                                  <option value="completed">{t.completed}</option>
+                                  <option value="cancelled">{t.cancelled}</option>
+                                </select>
+                              ) : (
+                                <span className="cell-value">
+                                  {transaction.status === 'pending' ? t.pending :
+                                     transaction.status === 'completed' ? t.completed :
+                                     transaction.status === 'cancelled' ? t.cancelled : transaction.status}
+                                </span>
+                              )}
+                            </td>
+                            <td className="action-buttons-cell">
                               <button
                                 className="table-action-button edit-button"
                                 onClick={() => {
@@ -3569,8 +3619,7 @@ function App() {
                               </button>
                             </td>
                           </tr>
-                          )
-                        })}
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -3778,22 +3827,6 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Gönderici Müşteri</label>
-                <select
-                  id="iradeFromCustomer"
-                  className="modal-select"
-                  value={iradeFromCustomer}
-                  onChange={(e) => setIradeFromCustomer(e.target.value)}
-                >
-                  <option value="">Gönderici Seç</option>
-                  {customers.map(customer => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
                 <label>Alıcı Müşteri</label>
                 <select
                   id="iradeToCustomer"
@@ -3817,10 +3850,8 @@ function App() {
                   className="modal-button confirm"
                   onClick={() => {
                     const amountInput = document.getElementById('iradeAmount') as HTMLInputElement
-                    const fromCustomerSelect = document.getElementById('iradeFromCustomer') as HTMLSelectElement
                     const toCustomerSelect = document.getElementById('iradeToCustomer') as HTMLSelectElement
                     const amount = parseFloat(amountInput.value)
-                    const fromCustomerId = fromCustomerSelect.value
                     const toCustomerId = toCustomerSelect.value
 
                     if (isNaN(amount) || amount <= 0) {
@@ -3828,29 +3859,26 @@ function App() {
                       return
                     }
 
-                    if (!fromCustomerId || !toCustomerId) {
-                      alert('Lütfen gönderici ve alıcı müşteri seçin')
+                    if (!toCustomerId) {
+                      alert('Lütfen alıcı müşteri seçin')
                       return
                     }
 
-                    if (fromCustomerId === toCustomerId) {
-                      alert('Gönderici ve alıcı aynı kişi olamaz')
-                      return
-                    }
-
-                    const fromCustomer = customers.find(c => c.id === fromCustomerId)
                     const toCustomer = customers.find(c => c.id === toCustomerId)
-                    if (!fromCustomer || !toCustomer) return
+                    if (!toCustomer) return
+
+                    // Gönderici mevcut kullanıcı
+                    const fromCustomerName = currentUser?.name || 'Sistem'
 
                     const newIrade: Irade = {
                       id: Date.now().toString(),
                       amount,
-                      fromCustomerId,
-                      fromCustomerName: fromCustomer.name,
+                      fromCustomerId: currentUser?.id || 'system',
+                      fromCustomerName,
                       toCustomerId,
                       toCustomerName: toCustomer.name,
                       date: new Date().toISOString().split('T')[0],
-                      note: t.iradeNote.replace('{sender}', fromCustomer.name).replace('{receiver}', toCustomer.name).replace('{amount}', amount.toString())
+                      note: t.iradeNote.replace('{sender}', fromCustomerName).replace('{receiver}', toCustomer.name).replace('{amount}', amount.toString())
                     }
 
                     setIrades([...irades, newIrade])
@@ -3866,7 +3894,7 @@ function App() {
                       senderRate: 1,
                       receiverRate: 1,
                       date: new Date().toISOString().split('T')[0],
-                      sender: fromCustomer.name,
+                      sender: fromCustomerName,
                       amount: amount.toString(),
                       receiver: toCustomer.name,
                       deliveryAmount: amount.toString(),
@@ -3890,7 +3918,6 @@ function App() {
 
                     setCustomers(updatedCustomers)
                     setIradeAmount('')
-                    setIradeFromCustomer('')
                     setIradeToCustomer('')
                     setShowIradeModal(false)
                     showToast('İrade başarıyla eklendi', 'success')
