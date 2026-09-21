@@ -155,7 +155,7 @@ body {
 /* Arabic font weight improvements */
 .app.rtl,
 .app.rtl * {
-  font-weight: 600 !important;
+  font-weight: 500 !important;
 }
 
 .app.rtl h1,
@@ -164,7 +164,7 @@ body {
 .app.rtl h4,
 .app.rtl h5,
 .app.rtl h6 {
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .app.rtl .customer-name,
@@ -172,7 +172,7 @@ body {
 .app.rtl .detail-value,
 .app.rtl .cell-value,
 .app.rtl .line-value {
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .app {
