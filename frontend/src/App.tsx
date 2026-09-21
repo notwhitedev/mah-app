@@ -100,6 +100,7 @@ function App() {
   })
   const [customers, setCustomers] = useState<Customer[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [tableSearchTerm, setTableSearchTerm] = useState('')
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' } | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [editingRowId, setEditingRowId] = useState<string | null>(null)
@@ -3015,99 +3016,103 @@ function App() {
             </button>
             <div className="customers-container">
               <h2>{t.customers}</h2>
-              
-              <div className="search-container">
-                <input
-                  type="text"
-                  placeholder={t.search}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
-              </div>
 
               {customers.length === 0 ? (
                 <div className="empty-state">
                   <p>{t.noCustomerAdded}</p>
                 </div>
-              ) : filteredCustomers.length === 0 ? (
-                <div className="empty-state">
-                  <p>{t.noSearchResults}</p>
-                </div>
               ) : (
-                <div className="customers-grid">
-                  {filteredCustomers.map((customer) => {
-                    const customerStats = updateCustomerStats(customer)
-                    return (
-                      <div key={customer.id} className="customer-card">
-                        <div className="customer-header">
-                          <h3>{customer.name}</h3>
-                          <span className="customer-id">ID: {customer.id}</span>
-                        </div>
-                        <div className="customer-details">
-                          <div className="detail-item">
-                            <span className="detail-label">{t.phoneLabel}</span>
-                            <span className="detail-value">{customer.phone}</span>
+                <>
+                  <div className="search-container">
+                    <input
+                      type="text"
+                      placeholder={t.search}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="search-input"
+                    />
+                  </div>
+
+                  {filteredCustomers.length === 0 ? (
+                    <div className="empty-state">
+                      <p>{t.noSearchResults}</p>
+                    </div>
+                  ) : (
+                    <div className="customers-grid">
+                      {filteredCustomers.map((customer) => {
+                        const customerStats = updateCustomerStats(customer)
+                        return (
+                          <div key={customer.id} className="customer-card">
+                            <div className="customer-header">
+                              <h3>{customer.name}</h3>
+                              <span className="customer-id">ID: {customer.id}</span>
+                            </div>
+                            <div className="customer-details">
+                              <div className="detail-item">
+                                <span className="detail-label">{t.phoneLabel}</span>
+                                <span className="detail-value">{customer.phone}</span>
+                              </div>
+                              <div className="detail-item">
+                                <span className="detail-label">{t.emailLabel}</span>
+                                <span className="detail-value">{customer.email}</span>
+                              </div>
+                              <div className="detail-item">
+                                <span className="detail-label">{t.locatedCountry}</span>
+                                <span className="detail-value">{customer.locatedCountry}</span>
+                              </div>
+                              <div className="detail-item">
+                                <span className="detail-label">{t.originCountry}</span>
+                                <span className="detail-value">{customer.originCountry}</span>
+                              </div>
+                            </div>
+                            <div className="customer-stats">
+                              <div className="customer-stat">
+                                <span className="stat-label">{t.totalTransactions}</span>
+                                <span className="stat-value">{customerStats.totalTransactions}</span>
+                              </div>
+                              <div className="customer-stat">
+                                <span className="stat-label">{t.iradeLabel}</span>
+                                <span className="stat-value">{(() => {
+                                  const customerIrades = irades.filter(irade => irade.toCustomerId === customer.id)
+                                  const totalIrade = customerIrades.reduce((sum, irade) => sum + irade.amount, 0)
+                                  return totalIrade > 0 ? totalIrade.toFixed(1) : '0'
+                                })()}</span>
+                              </div>
+                              <div className="customer-stat">
+                                <span className="stat-label">{t.profitLabel}</span>
+                                <span className="stat-value profit">{customerStats.profit > 0 ? customerStats.profit.toFixed(1) : '0'}</span>
+                              </div>
+                              <div className="customer-stat">
+                                <span className="stat-label">{t.lossLabel}</span>
+                                <span className="stat-value loss">{customerStats.loss > 0 ? customerStats.loss.toFixed(1) : '0'}</span>
+                              </div>
+                            </div>
+                            <div className="customer-actions">
+                              <button
+                                className="action-button transaction-button"
+                                onClick={() => handleAddTransaction(customer)}
+                              >
+                                {t.transactions}
+                              </button>
+                              <button
+                                className="action-button"
+                                onClick={() => handleExportClick(customer)}
+                              >
+                                {t.exportPDF}
+                              </button>
+                              <button
+                                className="action-button delete-button"
+                                onClick={() => handleDeleteCustomer(customer.id)}
+                              >
+                                {t.deleteCustomer}
+                              </button>
+                            </div>
                           </div>
-                          <div className="detail-item">
-                            <span className="detail-label">{t.emailLabel}</span>
-                            <span className="detail-value">{customer.email}</span>
-                          </div>
-                          <div className="detail-item">
-                            <span className="detail-label">{t.locatedCountry}</span>
-                            <span className="detail-value">{customer.locatedCountry}</span>
-                          </div>
-                          <div className="detail-item">
-                            <span className="detail-label">{t.originCountry}</span>
-                            <span className="detail-value">{customer.originCountry}</span>
-                          </div>
-                        </div>
-                        <div className="customer-stats">
-                          <div className="customer-stat">
-                            <span className="stat-label">{t.totalTransactions}</span>
-                            <span className="stat-value">{customerStats.totalTransactions}</span>
-                          </div>
-                          <div className="customer-stat">
-                            <span className="stat-label">{t.iradeLabel}</span>
-                            <span className="stat-value">{(() => {
-                              const customerIrades = irades.filter(irade => irade.toCustomerId === customer.id)
-                              const totalIrade = customerIrades.reduce((sum, irade) => sum + irade.amount, 0)
-                              return totalIrade > 0 ? totalIrade.toFixed(1) : '0'
-                            })()}</span>
-                          </div>
-                          <div className="customer-stat">
-                            <span className="stat-label">{t.profitLabel}</span>
-                            <span className="stat-value profit">{customerStats.profit > 0 ? customerStats.profit.toFixed(1) : '0'}</span>
-                          </div>
-                          <div className="customer-stat">
-                            <span className="stat-label">{t.lossLabel}</span>
-                            <span className="stat-value loss">{customerStats.loss > 0 ? customerStats.loss.toFixed(1) : '0'}</span>
-                          </div>
-                        </div>
-                        <div className="customer-actions">
-                          <button
-                            className="action-button transaction-button"
-                            onClick={() => handleAddTransaction(customer)}
-                          >
-                            {t.transactions}
-                          </button>
-                          <button
-                            className="action-button"
-                            onClick={() => handleExportClick(customer)}
-                          >
-                            {t.exportPDF}
-                          </button>
-                          <button
-                            className="action-button delete-button"
-                            onClick={() => handleDeleteCustomer(customer.id)}
-                          >
-                            {t.deleteCustomer}
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -3296,8 +3301,8 @@ function App() {
                   <input
                     type="text"
                     placeholder={language === 'tr' ? 'Satır ara...' : language === 'en' ? 'Search rows...' : 'بحث عن الصفوف...'}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={tableSearchTerm}
+                    onChange={(e) => setTableSearchTerm(e.target.value)}
                     className="table-search-input"
                   />
                 </div>
@@ -3398,8 +3403,8 @@ function App() {
 
                         {/* Normal İşlem Satırları */}
                         {(selectedCustomer?.transactions || []).filter(t => !t.isIrade).filter(t => {
-                          if (!searchTerm) return true
-                          const searchLower = searchTerm.toLowerCase()
+                          if (!tableSearchTerm) return true
+                          const searchLower = tableSearchTerm.toLowerCase()
                           return (
                             t.id.toLowerCase().includes(searchLower) ||
                             t.date.includes(searchLower) ||
