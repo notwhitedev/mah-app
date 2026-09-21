@@ -1392,8 +1392,8 @@ body.dark-mode .right-sidebar.collapsed {
   padding: 11px 10px;
   border: none;
   border-radius: 10px;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
   white-space: nowrap;
