@@ -156,7 +156,7 @@ body {
 .app.rtl,
 .app.rtl * {
   font-weight: 600 !important;
-  font-size: 1.05em !important;
+  font-size: 0.95em !important;
 }
 
 .app.rtl h1,

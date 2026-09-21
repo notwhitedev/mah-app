@@ -1484,7 +1484,7 @@ function App() {
     `
 
     const element = document.createElement('div')
-    const arabicTextWeight = language === 'ar' ? 'font-weight: 700; font-size: 1.05em;' : ''
+    const arabicTextWeight = language === 'ar' ? 'font-weight: 700; font-size: 0.95em;' : ''
     element.innerHTML = `
       <div style="font-family: ${language === 'ar' ? "Tahoma, Arial, sans-serif" : "Arial, sans-serif"}; font-weight: 700; width: 100%; min-height: 100%; background: #ececec; padding: 20px; box-sizing: border-box; direction: ${language === 'ar' ? 'rtl' : 'ltr'}; color: #1f2937;">
         <div style="background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 48%, #0369a1 100%); border-radius: 14px 14px 0 0; padding: 16px 18px; color: #ffffff; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 10px rgba(14,165,233,0.14);">
@@ -1677,10 +1677,10 @@ function App() {
 
     const labels = summaryLabels[language]
     const pdfTitle = `${t.dateRange} (${dateRangeStartDate} - ${dateRangeEndDate})`
-    const arabicFontStyle = language === 'ar' ? 'font-weight: 700; font-size: 1.05em;' : ''
+    const arabicFontStyle = language === 'ar' ? 'font-weight: 700; font-size: 0.95em;' : ''
     const pdfTitleHtml = `<span style="display:inline-block; text-align:center; font-family: Tahoma, Arial, sans-serif; ${arabicFontStyle}">${pdfTitle}</span>`
     const pdfFooterHtml = language === 'ar'
-      ? `<span dir="rtl" style="display:inline-block; direction:rtl; text-align:center; unicode-bidi:plaintext; font-family: Tahoma, Arial, sans-serif; font-weight: 700; font-size: 1.05em;">Flash</span>`
+      ? `<span dir="rtl" style="display:inline-block; direction:rtl; text-align:center; unicode-bidi:plaintext; font-family: Tahoma, Arial, sans-serif; font-weight: 700; font-size: 0.95em;">Flash</span>`
       : language === 'en'
         ? 'Flash'
         : 'Flash'
@@ -1724,7 +1724,7 @@ function App() {
     `
 
     const element = document.createElement('div')
-    const arabicTextWeight = language === 'ar' ? 'font-weight: 700; font-size: 1.05em;' : ''
+    const arabicTextWeight = language === 'ar' ? 'font-weight: 700; font-size: 0.95em;' : ''
     element.innerHTML = `
       <div style="font-family: ${language === 'ar' ? "Tahoma, Arial, sans-serif" : "Arial, sans-serif"}; font-weight: 700; width: 100%; min-height: 100%; background: #ececec; padding: 20px; box-sizing: border-box; direction: ${language === 'ar' ? 'rtl' : 'ltr'}; color: #1f2937;">
         <div style="background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 48%, #0369a1 100%); border-radius: 14px 14px 0 0; padding: 16px 18px; color: #ffffff; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 10px rgba(14,165,233,0.14);">
