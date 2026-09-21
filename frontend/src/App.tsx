@@ -2882,17 +2882,16 @@ function App() {
                           </td>
                           <td className="readonly-cell">
                             <button
-                              className="table-action-button"
+                              className="table-action-button edit-button stats-edit-button"
                               onClick={() => {
                                 const customer = customers.find(c => c.id === transaction.customerId)
                                 if (customer) {
-                                  handleAddTransaction(customer)
-                                  // Seçili müşteri set edildikten sonra düzenleme modunu aç
-                                  setTimeout(() => {
-                                    setSelectedCustomer(customer)
-                                    setTransactions(customer.transactions || [])
-                                    setEditingRowId(transaction.id)
-                                  }, 200)
+                                  setSelectedTransactionForModal({
+                                    ...transaction,
+                                    customerId: customer.id,
+                                    customerName: customer.name
+                                  })
+                                  setShowTransactionModal(true)
                                 }
                               }}
                               title={language === 'tr' ? 'Düzenle' : language === 'en' ? 'Edit' : 'تعديل'}

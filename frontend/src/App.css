@@ -2240,6 +2240,18 @@ body.dark-mode .right-sidebar.collapsed {
   color: #ffffff;
 }
 
+.table-action-button.edit-button.stats-edit-button {
+  background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+  color: #0ea5e9;
+  border: 1px solid #0ea5e9;
+}
+
+.table-action-button.edit-button.stats-edit-button:hover {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+}
+
 .table-action-button.edit-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
