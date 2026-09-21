@@ -2837,6 +2837,7 @@ function App() {
                         <th data-column="deliveryAmount">{t.deliveryAmount}</th>
                         <th data-column="profitLoss">{t.profitLoss}</th>
                         <th data-column="status">{t.status}</th>
+                        <th data-column="actions">{language === 'tr' ? 'İşlemler' : language === 'en' ? 'Actions' : 'إجراءات'}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2877,6 +2878,30 @@ function App() {
                                transaction.status === 'completed' ? t.completed :
                                transaction.status === 'cancelled' ? t.cancelled : transaction.status}
                             </span>
+                          </td>
+                          <td className="readonly-cell">
+                            <button
+                              className="table-action-button"
+                              onClick={() => {
+                                const customer = customers.find(c => c.id === transaction.customerId)
+                                if (customer) {
+                                  handleAddTransaction(customer)
+                                  setTimeout(() => {
+                                    setEditingRowId(transaction.id)
+                                  }, 100)
+                                }
+                              }}
+                              title={language === 'tr' ? 'Düzenle' : language === 'en' ? 'Edit' : 'تعديل'}
+                            >
+                              <span>T</span>
+                            </button>
+                            <button
+                              className="table-action-button delete-button"
+                              onClick={() => handleDeleteTransaction(transaction.id)}
+                              title={t.deleteButton}
+                            >
+                              <span>H</span>
+                            </button>
                           </td>
                         </tr>
                       ))}
