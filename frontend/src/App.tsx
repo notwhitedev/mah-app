@@ -1144,7 +1144,7 @@ function App() {
   // Font size değişince localStorage'a kaydet ve uygula
   useEffect(() => {
     localStorage.setItem('app_font_size', fontSize.toString())
-    document.documentElement.style.fontSize = `${fontSize}px`
+    document.documentElement.style.setProperty('--app-font-size', `${fontSize}px`)
   }, [fontSize])
 
   useEffect(() => {

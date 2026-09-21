@@ -13,6 +13,7 @@ html, body {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+  font-size: var(--app-font-size, 16px);
 }
 
 /* Subtle scrollbar */
