@@ -1275,8 +1275,12 @@ function App() {
 
     // İradeleri backend'den yükle
     const loadIrades = async () => {
+      if (!storageOwnerId) {
+        console.error('No storageOwnerId, skipping irades load')
+        return
+      }
       try {
-        const apiIrades = await cloudApi.getIrades(storageOwnerId || undefined)
+        const apiIrades = await cloudApi.getIrades(storageOwnerId)
         setIrades(apiIrades)
       } catch {
         console.error('Failed to load irades from backend')
