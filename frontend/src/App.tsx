@@ -1280,10 +1280,12 @@ function App() {
         return
       }
       try {
+        console.log('Loading irades for ownerId:', storageOwnerId)
         const apiIrades = await cloudApi.getIrades(storageOwnerId)
+        console.log('Loaded irades:', apiIrades)
         setIrades(apiIrades)
-      } catch {
-        console.error('Failed to load irades from backend')
+      } catch (error) {
+        console.error('Failed to load irades from backend:', error)
       }
     }
 
@@ -3801,12 +3803,15 @@ function App() {
 
                     // İradeyi backend'e kaydet
                     try {
+                      console.log('Saving irade to backend:', newIrade)
                       const apiIrade = await cloudApi.createIrade({
                         ...newIrade,
                         ownerId: getOwnerStorageId(currentUser)
                       })
+                      console.log('Irade saved to backend:', apiIrade)
                       setIrades([...irades, apiIrade])
-                    } catch {
+                    } catch (error) {
+                      console.error('Failed to save irade to backend:', error)
                       // Backend kaydı başarısız olursa yine de lokalde ekle
                       setIrades([...irades, newIrade])
                     }
