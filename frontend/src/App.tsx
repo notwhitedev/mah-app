@@ -3841,6 +3841,21 @@ function App() {
                     })
 
                     setCustomers(updatedCustomers)
+
+                    // İrade satırını backend'e kaydet
+                    try {
+                      const updatedCustomer = updatedCustomers.find(c => c.id === toCustomerId)
+                      if (updatedCustomer) {
+                        await fetch(`${API_URL}/api/customers/${toCustomerId}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(updatedCustomer)
+                        })
+                      }
+                    } catch {
+                      console.error('Failed to save irade transaction to backend')
+                    }
+
                     setIradeAmount('')
                     setIradeToCustomer('')
                     setShowIradeModal(false)
