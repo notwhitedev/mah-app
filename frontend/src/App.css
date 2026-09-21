@@ -3287,23 +3287,6 @@ body.dark-mode .user-edit-row input {
   color: #e5f3f1 !important;
 }
 
-@media (max-width: 700px) {
-  .main-content {
-    padding: 22px 14px 28px;
-  }
-
-  .stats-panel,
-  .form-container,
-  .customers-container,
-  .transactions-container {
-    border-radius: 14px;
-  }
-
-  .developer-actions,
-  .language-buttons {
-    flex-wrap: wrap;
-  }
-
 .stats-chart-container {
   margin-top: 30px;
   padding: 20px;
@@ -3380,6 +3363,22 @@ body.dark-mode .chart-value {
 }
 
 @media (max-width: 700px) {
+  .main-content {
+    padding: 22px 14px 28px;
+  }
+
+  .stats-panel,
+  .form-container,
+  .customers-container,
+  .transactions-container {
+    border-radius: 14px;
+  }
+
+  .developer-actions,
+  .language-buttons {
+    flex-wrap: wrap;
+  }
+
   .submit-button,
   .toggle-button,
   .action-button {
