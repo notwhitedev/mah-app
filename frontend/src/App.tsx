@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import html2pdf from 'html2pdf.js'
-import { API_BASE_URL } from './api'
+import { API_BASE_URL, cloudApi } from './api'
 
 const API_URL = API_BASE_URL.replace(/\/api$/, '')
 
@@ -1270,6 +1270,18 @@ function App() {
 
     loadCustomers()
 
+    // İradeleri backend'den yükle
+    const loadIrades = async () => {
+      try {
+        const apiIrades = await cloudApi.getIrades(storageOwnerId)
+        setIrades(apiIrades)
+      } catch {
+        console.error('Failed to load irades from backend')
+      }
+    }
+
+    loadIrades()
+
     setSettingsLoaded(false)
     fetch(`${API_URL}/api/settings/${storageOwnerId}`)
       .then(async (response) => {
@@ -2242,6 +2254,13 @@ function App() {
       if (deletedIrade) {
         // İradeler listesinden sil
         setIrades(irades.filter((irade: any) => irade.id !== targetTransaction.iradeId))
+
+        // Backend'den de sil
+        try {
+          await cloudApi.deleteIrade(targetTransaction.iradeId)
+        } catch {
+          console.error('Failed to delete irade from backend')
+        }
       }
     }
 
@@ -3752,7 +3771,17 @@ function App() {
                       note: t.iradeNote.replace('{sender}', fromCustomerName).replace('{receiver}', toCustomer.name).replace('{amount}', amount.toString())
                     }
 
-                    setIrades([...irades, newIrade])
+                    // İradeyi backend'e kaydet
+                    try {
+                      const apiIrade = await cloudApi.createIrade({
+                        ...newIrade,
+                        ownerId: getOwnerStorageId(currentUser)
+                      })
+                      setIrades([...irades, apiIrade])
+                    } catch {
+                      // Backend kaydı başarısız olursa yine de lokalde ekle
+                      setIrades([...irades, newIrade])
+                    }
 
                     // Alıcı müşterinin işlemlerine irade satırı ekle
                     const iradeTransaction: Transaction = {

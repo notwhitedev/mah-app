@@ -103,6 +103,21 @@ async function initializeDatabase() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS irades (
+      id TEXT PRIMARY KEY,
+      amount NUMERIC NOT NULL,
+      from_customer_id TEXT NOT NULL,
+      from_customer_name TEXT NOT NULL,
+      to_customer_id TEXT NOT NULL,
+      to_customer_name TEXT NOT NULL,
+      date TEXT NOT NULL,
+      note TEXT,
+      owner_id TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `);
+
   // Default developer user'ı ekle
   const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', ['985782980']);
   if (rows.length === 0) {
@@ -486,10 +501,84 @@ app.post('/api/customers/:customerId/transactions', async (req, res) => {
     };
 
     const updatedTransactions = [...(customer.transactions || []), transaction];
-    await pool.query('UPDATE customers SET transactions = $1, total_transactions = $2 WHERE id = $3', 
+    await pool.query('UPDATE customers SET transactions = $1, total_transactions = $2 WHERE id = $3',
       [JSON.stringify(updatedTransactions), updatedTransactions.length, req.params.customerId]);
 
     return res.status(201).json(transaction);
+  } catch (error) {
+    res.status(500).json({ message: 'Database error' });
+  }
+});
+
+// İradeler API endpoint'leri
+app.get('/api/irades', async (req, res) => {
+  try {
+    const ownerId = typeof req.query.ownerId === 'string' ? req.query.ownerId : undefined;
+    let query = 'SELECT * FROM irades';
+    const params: any[] = [];
+
+    if (ownerId) {
+      query += ' WHERE owner_id = $1';
+      params.push(ownerId);
+    }
+
+    const { rows } = await pool.query(query, params);
+    const irades = rows.map(row => ({
+      id: row.id,
+      amount: row.amount,
+      fromCustomerId: row.from_customer_id,
+      fromCustomerName: row.from_customer_name,
+      toCustomerId: row.to_customer_id,
+      toCustomerName: row.to_customer_name,
+      date: row.date,
+      note: row.note
+    }));
+    res.json(irades);
+  } catch (error) {
+    res.status(500).json({ message: 'Database error' });
+  }
+});
+
+app.post('/api/irades', async (req, res) => {
+  const { id, amount, fromCustomerId, fromCustomerName, toCustomerId, toCustomerName, date, note, ownerId } = req.body || {};
+
+  if (!amount || !fromCustomerId || !toCustomerId || !ownerId) {
+    return res.status(400).json({ message: 'Missing required fields.' });
+  }
+
+  try {
+    const iradeId = id || createId('irade');
+    const irade = {
+      id: iradeId,
+      amount,
+      fromCustomerId,
+      fromCustomerName,
+      toCustomerId,
+      toCustomerName,
+      date: date || new Date().toISOString().split('T')[0],
+      note: note || '',
+      ownerId,
+      createdAt: new Date().toISOString()
+    };
+
+    await pool.query(`
+      INSERT INTO irades (id, amount, from_customer_id, from_customer_name, to_customer_id, to_customer_name, date, note, owner_id, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `, [irade.id, irade.amount, irade.fromCustomerId, irade.fromCustomerName, irade.toCustomerId, irade.toCustomerName, irade.date, irade.note, irade.ownerId, irade.createdAt]);
+
+    return res.status(201).json(irade);
+  } catch (error) {
+    res.status(500).json({ message: 'Database error' });
+  }
+});
+
+app.delete('/api/irades/:id', async (req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM irades WHERE id = $1', [req.params.id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Irade not found.' });
+    }
+    return res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: 'Database error' });
   }

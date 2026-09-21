@@ -50,7 +50,13 @@ export const cloudApi = {
   createTransaction: (customerId: string, payload: Record<string, any>) => apiRequest<any>(`/customers/${customerId}/transactions`, {
     method: 'POST',
     body: JSON.stringify(payload)
-  })
+  }),
+  getIrades: (ownerId?: string) => apiRequest<any[]>(`/irades${ownerId ? `?ownerId=${encodeURIComponent(ownerId)}` : ''}`),
+  createIrade: (payload: Record<string, any>) => apiRequest<any>('/irades', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  deleteIrade: (id: string) => apiRequest(`/irades/${id}`, { method: 'DELETE' })
 }
 
 export { API_BASE_URL }
