@@ -211,6 +211,7 @@ function App() {
       totalTransactions: 'Toplam İşlem',
       activeCustomers: 'Aktif Müşteri',
       totalLoss: 'İradeler',
+      iradeLabel: 'İradeler',
       thisMonthActivity: 'Bu Ay Hareket',
       activeAccounts: 'Aktif Hesaplar',
       transactions: 'İşlemler',
@@ -389,6 +390,7 @@ function App() {
       totalTransactions: 'Total Transactions',
       activeCustomers: 'Active Customers',
       totalLoss: 'Commissions',
+      iradeLabel: 'Commissions',
       thisMonthActivity: 'This Month Activity',
       activeAccounts: 'Active Accounts',
       noDateRangeTransactions: 'No transactions in this date range',
@@ -552,6 +554,7 @@ function App() {
       totalTransactions: 'إجمالي المعاملات',
       activeCustomers: 'العملاء النشطين',
       totalLoss: 'العمولات',
+      iradeLabel: 'الإرادات',
       thisMonthActivity: 'نشاط هذا الشهر',
       activeAccounts: 'الحسابات النشطة',
       transactions: 'المعاملات',
@@ -1953,6 +1956,11 @@ function App() {
         return
       }
 
+      // İrade satırlarını istatistiklere dahil etme
+      if (t.isIrade) {
+        return
+      }
+
       // Kullanılan kur kullan (o anki kur değil, satırın kendi kuru)
       const senderRate = t.senderRate || 1
 
@@ -2034,7 +2042,18 @@ function App() {
         const finalCustomer = updateCustomerStats(updatedCustomer)
         setCustomers(customers.map(c => c.id === selectedCustomer.id ? finalCustomer : c))
         setSelectedCustomer(finalCustomer)
-        
+
+        // Backend'e güncel müşteri verisini kaydet
+        try {
+          await fetch(`${API_URL}/api/customers/${selectedCustomer.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalCustomer)
+          })
+        } catch {
+          console.error('Failed to update customer on backend')
+        }
+
         if (currentUser) {
           const userName = currentUser.name || (language === 'tr' ? 'Kullanıcı' : language === 'en' ? 'User' : 'مستخدم')
           const text = language === 'tr'
@@ -2418,6 +2437,11 @@ function App() {
           return
         }
 
+        // İrade satırlarını istatistiklere dahil etme
+        if (t.isIrade) {
+          return
+        }
+
         totalTransactions++
 
         // Kullanılan kur kullan (o anki kur değil, satırın kendi kuru)
@@ -2764,11 +2788,11 @@ function App() {
                 <div className={`line-value ${stats.totalProfit > 0 ? 'profit-text' : ''}`}>{stats.totalProfit > 0 ? stats.totalProfit.toFixed(1) : '-'}</div>
               </div>
               <div className="activity-line">
-                <div className="line-label">{t.totalLoss}</div>
+                <div className="line-label">{t.iradeLabel}</div>
                 <div className="line-bar">
-                  <div className="line-fill" style={{ width: stats.totalLoss > 0 ? `${Math.min(stats.totalLoss * 2, 100)}%` : '0%', backgroundColor: '#ef4444' }}></div>
+                  <div className="line-fill" style={{ width: totalIradeAmount > 0 ? `${Math.min(totalIradeAmount * 2, 100)}%` : '0%', backgroundColor: '#ef4444' }}></div>
                 </div>
-                <div className="line-value loss-text">{stats.totalLoss > 0 ? stats.totalLoss.toFixed(1) : '-'}</div>
+                <div className="line-value loss-text">{totalIradeAmount > 0 ? totalIradeAmount.toFixed(1) : '-'}</div>
               </div>
               <div className="activity-line">
                 <div className="line-label">{t.activeAccounts}</div>
