@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import html2pdf from 'html2pdf.js'
-import { API_BASE_URL, cloudApi } from './api'
+import { API_BASE_URL } from './api'
 
 const API_URL = API_BASE_URL.replace(/\/api$/, '')
 
@@ -1261,31 +1261,41 @@ function App() {
             return customer
           })
           setCustomers(migratedCustomers)
+          // localStorage'a da kaydet
+          localStorage.setItem(`customers_${storageOwnerId}`, JSON.stringify(migratedCustomers))
         } else {
-          setCustomers([])
-          setErrorMessage(language === 'tr' ? 'Bulut verileri yüklenemedi. İnternet ve Render bağlantısını kontrol edin.' : language === 'en' ? 'Cloud data could not be loaded. Check the internet and Render connection.' : 'تعذر تحميل البيانات السحابية. تحقق من اتصال الإنترنت وRender.')
+          // Backend başarısız olursa localStorage'dan yükle
+          const savedCustomers = localStorage.getItem(`customers_${storageOwnerId}`)
+          if (savedCustomers) {
+            setCustomers(JSON.parse(savedCustomers))
+          } else {
+            setCustomers([])
+          }
+          setErrorMessage(language === 'tr' ? 'Bulut verileri yüklenemedi. Yerel veriler kullanılıyor.' : language === 'en' ? 'Cloud data could not be loaded. Using local data.' : 'تعذر تحميل البيانات السحابية. استخدام البيانات المحلية.')
         }
       } catch (err) {
-        setCustomers([])
-        setErrorMessage(language === 'tr' ? 'Bulut verilerine bağlanılamadı. İnternet ve Render bağlantısını kontrol edin.' : language === 'en' ? 'Could not connect to cloud data. Check the internet and Render connection.' : 'تعذر الاتصال بالبيانات السحابية. تحقق من اتصال الإنترنت وRender.')
+        // Backend başarısız olursa localStorage'dan yükle
+        const savedCustomers = localStorage.getItem(`customers_${storageOwnerId}`)
+        if (savedCustomers) {
+          setCustomers(JSON.parse(savedCustomers))
+        } else {
+          setCustomers([])
+        }
+        setErrorMessage(language === 'tr' ? 'Bulut verilerine bağlanılamadı. Yerel veriler kullanılıyor.' : language === 'en' ? 'Could not connect to cloud data. Using local data.' : 'تعذر الاتصال بالبيانات السحابية. استخدام البيانات المحلية.')
       }
     }
 
     loadCustomers()
 
-    // İradeleri backend'den yükle
-    const loadIrades = async () => {
-      if (!storageOwnerId) {
-        console.error('No storageOwnerId, skipping irades load')
-        return
-      }
+    // İradeleri localStorage'dan yükle
+    const loadIrades = () => {
       try {
-        console.log('Loading irades for ownerId:', storageOwnerId)
-        const apiIrades = await cloudApi.getIrades(storageOwnerId)
-        console.log('Loaded irades:', apiIrades)
-        setIrades(apiIrades)
-      } catch (error) {
-        console.error('Failed to load irades from backend:', error)
+        const savedIrades = localStorage.getItem('irades')
+        if (savedIrades) {
+          setIrades(JSON.parse(savedIrades))
+        }
+      } catch {
+        console.error('Failed to load irades from localStorage')
       }
     }
 
@@ -1335,6 +1345,10 @@ function App() {
       language
     }
     const saveTimer = window.setTimeout(() => {
+      // Önce localStorage'a kaydet
+      localStorage.setItem(`settings_${storageOwnerId}`, JSON.stringify(settings))
+
+      // Sonra backend'e kaydet
       fetch(`${API_URL}/api/settings/${storageOwnerId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -1342,7 +1356,8 @@ function App() {
       }).then((response) => {
         if (!response.ok) throw new Error('Settings save failed')
       }).catch(() => {
-        setErrorMessage(language === 'tr' ? 'Ayarlar buluta kaydedilemedi.' : language === 'en' ? 'Settings could not be saved to the cloud.' : 'تعذر حفظ الإعدادات في السحابة.')
+        // Backend başarısız olursa localStorage'da kalır
+        console.log('Settings saved to localStorage only')
       })
     }, 400)
 
@@ -2273,20 +2288,11 @@ function App() {
       return
     }
 
-    // Eğer silinen işlem bir irade ise, iradeler listesinden sil ve müşteriye irade miktarını geri ver
+    // Eğer silinen işlem bir irade ise, iradeler listesinden sil
     if (targetTransaction.isIrade && targetTransaction.iradeId) {
-      const deletedIrade = irades.find((irade: any) => irade.id === targetTransaction.iradeId)
-      if (deletedIrade) {
-        // İradeler listesinden sil
-        setIrades(irades.filter((irade: any) => irade.id !== targetTransaction.iradeId))
-
-        // Backend'den de sil
-        try {
-          await cloudApi.deleteIrade(targetTransaction.iradeId)
-        } catch {
-          console.error('Failed to delete irade from backend')
-        }
-      }
+      const updatedIrades = irades.filter((irade: any) => irade.id !== targetTransaction.iradeId)
+      setIrades(updatedIrades)
+      localStorage.setItem('irades', JSON.stringify(updatedIrades))
     }
 
     if (window.confirm(t.confirmDeleteTransaction)) {
@@ -3801,20 +3807,10 @@ function App() {
                       note: t.iradeNote.replace('{sender}', fromCustomerName).replace('{receiver}', toCustomer.name).replace('{amount}', amount.toString())
                     }
 
-                    // İradeyi backend'e kaydet
-                    try {
-                      console.log('Saving irade to backend:', newIrade)
-                      const apiIrade = await cloudApi.createIrade({
-                        ...newIrade,
-                        ownerId: getOwnerStorageId(currentUser)
-                      })
-                      console.log('Irade saved to backend:', apiIrade)
-                      setIrades([...irades, apiIrade])
-                    } catch (error) {
-                      console.error('Failed to save irade to backend:', error)
-                      // Backend kaydı başarısız olursa yine de lokalde ekle
-                      setIrades([...irades, newIrade])
-                    }
+                    // İradeyi localStorage'a kaydet
+                    const updatedIrades = [...irades, newIrade]
+                    setIrades(updatedIrades)
+                    localStorage.setItem('irades', JSON.stringify(updatedIrades))
 
                     // Alıcı müşterinin işlemlerine irade satırı ekle
                     const iradeTransaction: Transaction = {
