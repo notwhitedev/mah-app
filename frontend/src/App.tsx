@@ -450,7 +450,7 @@ function App() {
       noDateRangeTransactions: 'No transactions in this date range'
     },
     ar: {
-      appTitle: 'Flash',
+      appTitle: 'فلاش',
       appSubtitle: 'لوحة تتبع المعاملات والعملاء',
       statistics: 'الإحصائيات',
       addCustomer: 'إضافة عميل',
@@ -1484,47 +1484,48 @@ function App() {
     `
 
     const element = document.createElement('div')
+    const arabicTextWeight = language === 'ar' ? 'font-weight: 700;' : ''
     element.innerHTML = `
       <div style="font-family: ${language === 'ar' ? "Tahoma, Arial, sans-serif" : "Arial, sans-serif"}; font-weight: 700; width: 100%; min-height: 100%; background: #ececec; padding: 20px; box-sizing: border-box; direction: ${language === 'ar' ? 'rtl' : 'ltr'}; color: #1f2937;">
         <div style="background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 48%, #0369a1 100%); border-radius: 14px 14px 0 0; padding: 16px 18px; color: #ffffff; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 10px rgba(14,165,233,0.14);">
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
             <div style="display: flex; flex-direction: column; align-items: ${language === 'ar' ? 'flex-end' : 'flex-start'}; min-width: 180px;">
-              <span style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 2px;">${labels.date}</span>
+              <span style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 2px; ${arabicTextWeight}">${labels.date}</span>
               <span style="font-size: 14px; font-weight: 700;">${currentDate}</span>
             </div>
             <div style="flex: 1; text-align: center; font-size: 18px; font-weight: 800; letter-spacing: 0.2px;">${pdfTitleHtml}</div>
-            <div style="font-size: 20px; font-weight: 800; text-align: ${language === 'ar' ? 'left' : 'right'}; min-width: 180px;">${customer.name}</div>
+            <div style="font-size: 20px; font-weight: 800; text-align: ${language === 'ar' ? 'left' : 'right'}; min-width: 180px; ${arabicTextWeight}">${customer.name}</div>
           </div>
         </div>
 
         <div style="background: #f5f5f5; border: 1px solid #d8d8d8; border-top: none; border-radius: 0 0 12px 12px; padding: 18px 14px 10px;">
           <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 150px; background: #ffffff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 10px 12px;">
-              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">${language === 'ar' ? 'البريد الإلكتروني' : t.emailLabel}</div>
+              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px; ${arabicTextWeight}">${language === 'ar' ? 'البريد الإلكتروني' : t.emailLabel}</div>
               <div style="font-size: 12px; font-weight: 700; color: #1f2937;">${customer.email || '—'}</div>
             </div>
             <div style="flex: 1; min-width: 150px; background: #ffffff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 10px 12px; text-align: center;">
-              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">${language === 'ar' ? 'الهاتف' : t.phoneLabel}</div>
+              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px; ${arabicTextWeight}">${language === 'ar' ? 'الهاتف' : t.phoneLabel}</div>
               <div style="font-size: 12px; font-weight: 700; color: #1f2937;">${customer.phone || '—'}</div>
             </div>
             <div style="flex: 1; min-width: 150px; background: #ffffff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 10px 12px; text-align: center;">
-              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">${language === 'ar' ? 'المعرف' : t.id}</div>
+              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px; ${arabicTextWeight}">${language === 'ar' ? 'المعرف' : t.id}</div>
               <div style="font-size: 12px; font-weight: 700; color: #1f2937;">${customer.id}</div>
             </div>
             <div style="flex: 1; min-width: 150px; background: #ffffff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 10px 12px; text-align: center;">
-              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">${language === 'ar' ? 'إجمالي المعاملات' : t.totalTransactions}</div>
+              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px; ${arabicTextWeight}">${language === 'ar' ? 'إجمالي المعاملات' : t.totalTransactions}</div>
               <div style="font-size: 12px; font-weight: 700; color: #1f2937;">${transactionsToExport.length}</div>
             </div>
           </div>
 
           <div style="margin: 0 0 14px; background: #ffffff; border: 1px solid #dfe3ea; border-radius: 10px; overflow: hidden;">
-            <div style="padding: 8px 12px; background: linear-gradient(90deg, #f1f5f9, #e2e8f0); border-bottom: 1px solid #dfe3ea; font-size: 11px; font-weight: 700; color: #334155;">${labels.lena} / ${labels.lekum}</div>
+            <div style="padding: 8px 12px; background: linear-gradient(90deg, #f1f5f9, #e2e8f0); border-bottom: 1px solid #dfe3ea; font-size: 11px; font-weight: 700; color: #334155; ${arabicTextWeight}">${labels.lena} / ${labels.lekum}</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
               <thead>
                 <tr style="background: #eef2ff; color: #1f2937;">
-                  <th style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center;">${labels.currency}</th>
-                  <th style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center;">${labels.lena}</th>
-                  <th style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center;">${labels.lekum}</th>
+                  <th style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; ${arabicTextWeight}">${labels.currency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; ${arabicTextWeight}">${labels.lena}</th>
+                  <th style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; ${arabicTextWeight}">${labels.lekum}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1537,16 +1538,16 @@ function App() {
             <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
               <thead>
                 <tr style="background: linear-gradient(90deg, #4c57d8 0%, #5d4bbf 100%); color: #ffffff; text-align: center;">
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'الحالة' : t.status}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المعرف' : t.transactionId}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'التاريخ' : t.date}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المرسل' : t.sender}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'عملة المرسل' : t.senderCurrency}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المبلغ المرسل' : t.amount}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المرسل إليه' : t.receiver}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'عملة المستقبل' : t.receiverCurrency}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'المبلغ المستلم' : t.deliveryAmount}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${language === 'ar' ? 'ملاحظة' : t.note}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'الحالة' : t.status}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'المعرف' : t.transactionId}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'التاريخ' : t.date}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'المرسل' : t.sender}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'عملة المرسل' : t.senderCurrency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'المبلغ المرسل' : t.amount}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'المرسل إليه' : t.receiver}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'عملة المستقبل' : t.receiverCurrency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'المبلغ المستلم' : t.deliveryAmount}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${language === 'ar' ? 'ملاحظة' : t.note}</th>
                   ${customColumnHeaders}
                 </tr>
               </thead>
@@ -1557,17 +1558,17 @@ function App() {
                   return `
                     <tr style="background: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
                       <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; font-weight: 700;">
-                        <span style="display: inline-block; padding: 2px 8px; border-radius: 5px; background: ${rawStatus === 'pending' ? '#fef3c7' : rawStatus === 'completed' ? '#dcfce7' : '#fee2e2'}; color: ${rawStatus === 'pending' ? '#92400e' : rawStatus === 'completed' ? '#166534' : '#991b1b'};">${statusText}</span>
+                        <span style="display: inline-block; padding: 2px 8px; border-radius: 5px; background: ${rawStatus === 'pending' ? '#fef3c7' : rawStatus === 'completed' ? '#dcfce7' : '#fee2e2'}; color: ${rawStatus === 'pending' ? '#92400e' : rawStatus === 'completed' ? '#166534' : '#991b1b'}; ${arabicTextWeight}">${statusText}</span>
                       </td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; font-weight: 700;">${transaction.id || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.date || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.sender || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.senderCurrency || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.amount || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiver || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiverCurrency || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.deliveryAmount || '-'}</td>
-                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.note || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; font-weight: 700; ${arabicTextWeight}">${transaction.id || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.date || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.sender || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.senderCurrency || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.amount || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.receiver || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.receiverCurrency || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.deliveryAmount || '-'}</td>
+                      <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.note || '-'}</td>
                       ${customColumnCells(transaction)}
                     </tr>
                   `
@@ -1676,9 +1677,10 @@ function App() {
 
     const labels = summaryLabels[language]
     const pdfTitle = `${t.dateRange} (${dateRangeStartDate} - ${dateRangeEndDate})`
-    const pdfTitleHtml = `<span style="display:inline-block; text-align:center; font-family: Tahoma, Arial, sans-serif;">${pdfTitle}</span>`
+    const arabicFontStyle = language === 'ar' ? 'font-weight: 700;' : ''
+    const pdfTitleHtml = `<span style="display:inline-block; text-align:center; font-family: Tahoma, Arial, sans-serif; ${arabicFontStyle}">${pdfTitle}</span>`
     const pdfFooterHtml = language === 'ar'
-      ? '<span dir="rtl" style="display:inline-block; direction:rtl; text-align:center; unicode-bidi:plaintext; font-family: Tahoma, Arial, sans-serif;">Flash</span>'
+      ? `<span dir="rtl" style="display:inline-block; direction:rtl; text-align:center; unicode-bidi:plaintext; font-family: Tahoma, Arial, sans-serif; font-weight: 700;">Flash</span>`
       : language === 'en'
         ? 'Flash'
         : 'Flash'
@@ -1722,27 +1724,28 @@ function App() {
     `
 
     const element = document.createElement('div')
+    const arabicTextWeight = language === 'ar' ? 'font-weight: 700;' : ''
     element.innerHTML = `
       <div style="font-family: ${language === 'ar' ? "Tahoma, Arial, sans-serif" : "Arial, sans-serif"}; font-weight: 700; width: 100%; min-height: 100%; background: #ececec; padding: 20px; box-sizing: border-box; direction: ${language === 'ar' ? 'rtl' : 'ltr'}; color: #1f2937;">
         <div style="background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 48%, #0369a1 100%); border-radius: 14px 14px 0 0; padding: 16px 18px; color: #ffffff; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 10px rgba(14,165,233,0.14);">
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
             <div style="display: flex; flex-direction: column; align-items: ${language === 'ar' ? 'flex-end' : 'flex-start'}; min-width: 180px;">
-              <span style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 2px;">${labels.date}</span>
+              <span style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 2px; ${arabicTextWeight}">${labels.date}</span>
               <span style="font-size: 14px; font-weight: 700;">${currentDate}</span>
             </div>
             <div style="flex: 1; text-align: center; font-size: 18px; font-weight: 800; letter-spacing: 0.2px;">${pdfTitleHtml}</div>
-            <div style="font-size: 20px; font-weight: 800; text-align: ${language === 'ar' ? 'left' : 'right'}; min-width: 180px;">${t.dateRange}</div>
+            <div style="font-size: 20px; font-weight: 800; text-align: ${language === 'ar' ? 'left' : 'right'}; min-width: 180px; ${arabicTextWeight}">${t.dateRange}</div>
           </div>
         </div>
 
         <div style="background: #f5f5f5; border: 1px solid #d8d8d8; border-top: none; border-radius: 0 0 12px 12px; padding: 18px 14px 10px;">
           <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 150px; background: #ffffff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 10px 12px;">
-              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">${t.dateRange}</div>
+              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px; ${arabicTextWeight}">${t.dateRange}</div>
               <div style="font-size: 12px; font-weight: 700; color: #1f2937;">${dateRangeStartDate} - ${dateRangeEndDate}</div>
             </div>
             <div style="flex: 1; min-width: 150px; background: #ffffff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 10px 12px; text-align: center;">
-              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">${t.totalTransactionsLabel}</div>
+              <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px; ${arabicTextWeight}">${t.totalTransactionsLabel}</div>
               <div style="font-size: 12px; font-weight: 700; color: #1f2937;">${dateRangeTransactions.length}</div>
             </div>
           </div>
@@ -1751,32 +1754,32 @@ function App() {
             <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
               <thead>
                 <tr style="background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%); color: #ffffff;">
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.id}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.date}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.sender}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.senderCurrency}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.amount}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.receiver}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.receiverCurrency}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.deliveryAmount}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.profitLoss}</th>
-                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px;">${t.status}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.id}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.date}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.sender}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.senderCurrency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.amount}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.receiver}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.receiverCurrency}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.deliveryAmount}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.profitLoss}</th>
+                  <th style="padding: 8px 6px; border: 1px solid rgba(255,255,255,0.23); font-size: 9px; ${arabicTextWeight}">${t.status}</th>
                   ${customColumnHeaders}
                 </tr>
               </thead>
               <tbody>
                 ${dateRangeTransactions.map((transaction) => `
                   <tr style="border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.id}</td>
-                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.date}</td>
-                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.sender || '-'}</td>
-                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.senderCurrency || '-'}</td>
-                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.amount || '-'}</td>
-                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiver || '-'}</td>
-                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.receiverCurrency || '-'}</td>
-                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.deliveryAmount || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.id}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.date}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.sender || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.senderCurrency || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.amount || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.receiver || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.receiverCurrency || '-'}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.deliveryAmount || '-'}</td>
                     <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: ${transaction.profitLoss > 0 ? '#16a34a' : transaction.profitLoss < 0 ? '#dc2626' : '#0f172a'}; font-weight: 700;">${transaction.profitLoss ? Math.abs(transaction.profitLoss).toFixed(1) : '0'}</td>
-                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a;">${transaction.status === 'pending' ? t.pending : transaction.status === 'completed' ? t.completed : transaction.status === 'cancelled' ? t.cancelled : transaction.status}</td>
+                    <td style="padding: 8px 6px; border: 1px solid #e5e7eb; text-align: center; color: #0f172a; ${arabicTextWeight}">${transaction.status === 'pending' ? t.pending : transaction.status === 'completed' ? t.completed : transaction.status === 'cancelled' ? t.cancelled : transaction.status}</td>
                     ${customColumnCells(transaction)}
                   </tr>
                 `).join('')}
@@ -1785,13 +1788,13 @@ function App() {
           </div>
 
           <div style="background: #ffffff; border: 1px solid #d8d8d8; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-            <div style="font-size: 11px; font-weight: 700; color: #1f2937; margin-bottom: 8px; text-align: center;">${labels.currency} - ${labels.lekumText} / ${labels.lenaText}</div>
+            <div style="font-size: 11px; font-weight: 700; color: #1f2937; margin-bottom: 8px; text-align: center; ${arabicTextWeight}">${labels.currency} - ${labels.lekumText} / ${labels.lenaText}</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
               <thead>
                 <tr style="background: #f8fafc;">
-                  <th style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: left; font-weight: 700; color: #0f172a;">${labels.currency}</th>
-                  <th style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: 700; color: #dc2626;">${labels.lekumText}</th>
-                  <th style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: 700; color: #16a34a;">${labels.lenaText}</th>
+                  <th style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: left; font-weight: 700; color: #0f172a; ${arabicTextWeight}">${labels.currency}</th>
+                  <th style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: 700; color: #dc2626; ${arabicTextWeight}">${labels.lekumText}</th>
+                  <th style="padding: 7px 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: 700; color: #16a34a; ${arabicTextWeight}">${labels.lenaText}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1803,11 +1806,11 @@ function App() {
           <div style="background: #ffffff; border: 1px solid #d8d8d8; border-radius: 8px; padding: 12px;">
             <div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
               <div style="flex: 1; min-width: 120px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px;">
-                <div style="font-size: 9px; color: #6b7280; margin-bottom: 2px;">${t.profitLabel}</div>
+                <div style="font-size: 9px; color: #6b7280; margin-bottom: 2px; ${arabicTextWeight}">${t.profitLabel}</div>
                 <div style="font-size: 12px; font-weight: 700; color: #16a34a;">${dateRangeTransactions.reduce((sum, t) => sum + (t.profitLoss > 0 ? t.profitLoss : 0), 0).toFixed(1)}</div>
               </div>
               <div style="flex: 1; min-width: 120px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px;">
-                <div style="font-size: 9px; color: #6b7280; margin-bottom: 2px;">${t.lossLabel}</div>
+                <div style="font-size: 9px; color: #6b7280; margin-bottom: 2px; ${arabicTextWeight}">${t.lossLabel}</div>
                 <div style="font-size: 12px; font-weight: 700; color: #dc2626;">${Math.abs(dateRangeTransactions.reduce((sum, t) => sum + (t.profitLoss < 0 ? t.profitLoss : 0), 0)).toFixed(1)}</div>
               </div>
             </div>
