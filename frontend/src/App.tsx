@@ -2476,8 +2476,9 @@ function App() {
 
   const stats = calculateTotalStats()
 
-  // İradelerin toplamını hesapla (irades array'inden)
-  const totalIradeAmount = irades.reduce((sum, irade) => sum + irade.amount, 0)
+  // İradelerin toplamını hesapla (kazanç - zarar - yatırılan iradeler)
+  const totalYatirilanIrade = irades.reduce((sum, irade) => sum + irade.amount, 0)
+  const totalIradeAmount = stats.totalProfit - stats.totalLoss - totalYatirilanIrade
 
 
 
@@ -3930,7 +3931,7 @@ function App() {
                       amount: `-${amount}`, // Negatif tutar - hesaptan çıkarılacak
                       receiver: toCustomer.name, // Alıcı müşteri
                       deliveryAmount: amount.toString(), // İrade miktarı
-                      profitLoss: 0, // Zarar olarak geçmesin
+                      profitLoss: -amount, // İrade olarak geçsin
                       description: 'İrade',
                       status: 'completed',
                       note: newIrade.note,
