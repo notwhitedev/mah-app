@@ -2476,8 +2476,8 @@ function App() {
 
   const stats = calculateTotalStats()
 
-  // İradelerin toplamını hesapla (kazanç - zarar)
-  const totalIradeAmount = stats.totalProfit - stats.totalLoss
+  // İradelerin toplamını hesapla (irades array'inden)
+  const totalIradeAmount = irades.reduce((sum, irade) => sum + irade.amount, 0)
 
 
 
